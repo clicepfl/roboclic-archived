@@ -46,7 +46,7 @@ def poll(update, context):
     member = unidecode.unidecode(data[-1]).lower()
 
     if member not in COMMITTEE.keys():
-        update.message.reply_text(f'{member} is not in CLIC')
+        update.message.reply_text(f'{data[-1]} is not in CLIC')
         return
 
     committee = list(COMMITTEE.values())
