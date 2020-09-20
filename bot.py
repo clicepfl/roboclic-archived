@@ -1,33 +1,22 @@
 import logging
 import random
-import unidecode
+import json
 
+import unidecode
 import telegram
 from telegram.ext import Updater, CommandHandler
 
+
+HOWTO = '/poll question member'
+REPLY = 'Qui a dit ça : "{}"'
+LIMIT = 10
 
 with open('api.key', 'r') as key:
     TOKEN = key.readline().strip()
     print(TOKEN)
 
-# TODO: to be stored in a json
-COMMITTEE = {
-             'rayan': "Rayan",
-             'camille': "Camille",
-             'eloise': "Éloïse",
-             'maelys': "Maëlys",
-             'hugo': "Hugo",
-             'arthur': "Arthur",
-             'manon': "Manon",
-             'kevin': "Kévin",
-             'gonxhe': "Gonxhe",
-             'mallo': "Mallo",
-             'tom': "Tom",
-             'marine': "Marine"
-            }
-HOWTO = '/poll question member'
-REPLY = 'Qui a dit ça : "{}"'
-LIMIT = 10
+with open('options.json', 'r') as options:
+    OPTIONS = json.loads(options.read())
 
 
 def start(update, context):
@@ -43,30 +32,30 @@ def poll(update, context):
         return
 
     question = REPLY.format(' '.join(data[1:-1]))
-    member = unidecode.unidecode(data[-1]).lower()
+    answer = unidecode.unidecode(data[-1]).lower()
 
-    if member not in COMMITTEE.keys():
+    if answer not in OPTIONS.keys():
         update.message.reply_text(f'{data[-1]} is not in CLIC')
         return
 
-    committee = list(COMMITTEE.values())
+    display_options = list(OPTIONS.values())
 
-    if len(COMMITTEE) > LIMIT:
-        committee.remove(COMMITTEE[member])
-        choices = random.sample(committee, LIMIT - 1)
+    if len(OPTIONS) > LIMIT:
+        display_options.remove(OPTIONS[answer])
+        choices = random.sample(display_options, LIMIT - 1)
         answer_id = random.randint(0, LIMIT - 1)
-        choices.insert(answer_id, COMMITTEE[member])
+        choices.insert(answer_id, OPTIONS[answer])
     else:
-        choices = random.sample(committee, LIMIT)
-        answer_id = choices.index(COMMITTEE[member])
+        choices = random.sample(display_options, LIMIT)
+        answer_id = choices.index(OPTIONS[answer])
 
-    message = context.bot.send_poll(chat_id=update.effective_chat.id,
-                                    question=question,
-                                    options=choices,
-                                    type=telegram.Poll.QUIZ,
-                                    correct_option_id=answer_id,
-                                    is_anonymous=False,
-                                    allows_multiple_answers=False)
+    context.bot.send_poll(chat_id=update.effective_chat.id,
+                          question=question,
+                          options=choices,
+                          type=telegram.Poll.QUIZ,
+                          correct_option_id=answer_id,
+                          is_anonymous=False,
+                          allows_multiple_answers=False)
 
 
 # TODO: write a cleaner help message
