@@ -4,14 +4,14 @@ _Qui a dit ça ? Le fameux jeu de la CLIC_
 ### Requirements
 
 Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/python-telegram-bot) for Python.
-You will also need [Unidecode](https://pypi.org/project/Unidecode/). Namely:
+You will also need [Unidecode](https://pypi.org/project/Unidecode/). Namely
 
 ```
 $ pip install python-telegram-bot
 $ pip install unidecode
 ```
 
-Then simply launch the bot
+See the Telegram API documentation to obtain your bot token, to be stored in a ```api.key``` file. Then simply launch the bot
 ```
 $ python bot.py
 ```
@@ -21,4 +21,4 @@ Enjoy!
 
 ### Tentative changes
 
-The above mentioned JSON file along with a Telegram selection menu of the answer/member.
+Add a Telegram selection menu of the answer/member to make the poll creation easier to the user (and potentially secret).
