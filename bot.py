@@ -15,7 +15,7 @@ COMMITTEE = {
              'rayan': "Rayan",
              'camille': "Camille",
              'eloise': "Éloïse",
-             'maelys': "Maelys",
+             'maelys': "Maëlys",
              'hugo': "Hugo",
              'arthur': "Arthur",
              'manon': "Manon",
@@ -25,7 +25,7 @@ COMMITTEE = {
              'tom': "Tom",
              'marine': "Marine"
             }
-HOWTO = '/poll <question> <member>'
+HOWTO = '/poll question member'
 REPLY = 'Qui a dit ça : "{}"'
 LIMIT = 10
 
@@ -37,6 +37,11 @@ def start(update, context):
 def poll(update, context):
 
     data = update.message.text.split(' ')
+
+    if len(data) < 3:
+        update.message.reply_text('Wrong format, type /help for more info')
+        return
+
     question = REPLY.format(' '.join(data[1:-1]))
     member = unidecode.unidecode(data[-1]).lower()
 
@@ -45,6 +50,7 @@ def poll(update, context):
         return
 
     committee = list(COMMITTEE.values())
+
     if len(COMMITTEE) > LIMIT:
         committee.remove(COMMITTEE[member])
         choices = random.sample(committee, LIMIT - 1)
