@@ -15,10 +15,6 @@ See the Telegram API documentation to obtain your bot token, to be stored in a `
 ```
 $ python bot.py
 ```
-You can edit the list of people _qui l'ont peut-être dit_ via a direct edit of the JSON file ```options.json```. The key should be a unicode version of a potentially fancier value. Typically, you want to add an entry of the form ```"francois": "François"```.
+You can edit the list of people _qui l'ont peut-être dit_ via a direct edit of the JSON file ```options.json```. The key should be a unique and simple identifier of a possibily fancy value. Typically, you want to add an entry of the form ```"francois": "François"``` or ```4: "François"```.
 
 Enjoy!
-
-### Tentative changes
-
-Add a Telegram selection menu of the answer/member to make the poll creation easier to the user (and potentially secret).
