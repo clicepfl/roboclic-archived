@@ -10,7 +10,8 @@ with open('api.key', 'r') as key:
     TOKEN = key.readline().strip()
     print(TOKEN)
 
-COMMITEE = {
+# TODO: to be stored in a json
+COMMITTEE = {
              'rayan': "Rayan",
              'camille': "Camille",
              'eloise': "Éloïse",
@@ -26,6 +27,7 @@ COMMITEE = {
             }
 HOWTO = '/poll <question> <member>'
 REPLY = 'Qui a dit ça : "{}"'
+LIMIT = 10
 
 
 def start(update, context):
@@ -38,22 +40,30 @@ def poll(update, context):
     question = REPLY.format(' '.join(data[1:-1]))
     member = unidecode.unidecode(data[-1]).lower()
 
-    if member not in COMMITEE.keys():
+    if member not in COMMITTEE.keys():
         update.message.replay_text(f'{member} is not in CLIC')
         return
 
-    choices = random.sample(list(COMMITEE.values()), 10)
-    answer = choices.index(COMMITEE[member])
+    committee = list(COMMITTEE.values())
+    if len(COMMITTEE) > LIMIT:
+        committee.remove(COMMITTEE[member])
+        choices = random.sample(committee, LIMIT - 1)
+        answer_id = random.randint(0, LIMIT - 1)
+        choices.insert(answer_id, COMMITTEE[member])
+    else:
+        choices = random.sample(committee, LIMIT)
+        answer_id = choices.index(COMMITTEE[member])
 
     message = context.bot.send_poll(chat_id=update.effective_chat.id,
                                     question=question,
                                     options=choices,
                                     type=telegram.Poll.QUIZ,
-                                    correct_option_id=answer,
+                                    correct_option_id=answer_id,
                                     is_anonymous=False,
                                     allows_multiple_answers=False)
 
 
+# TODO: write a cleaner help message
 def help_handler(update, context):
     update.message.reply_text(HOWTO)
 
