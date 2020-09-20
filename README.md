@@ -19,6 +19,6 @@ You can edit the list of people _qui l'ont peut-être dit_ via a direct edit of 
 
 Enjoy!
 
-### Upcoming changes
+### Tentative changes
 
 The above mentioned JSON file along with a Telegram selection menu of the answer/member.
