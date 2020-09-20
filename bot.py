@@ -3,77 +3,85 @@ import random
 import json
 
 import unidecode
-import telegram
-from telegram.ext import Updater, CommandHandler
+from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, ConversationHandler, CallbackQueryHandler
 
 
-HOWTO = '/poll question member'
-REPLY = 'Qui a dit ça : "{}"'
 LIMIT = 10
+QUESTION, POLL = range(2)
 
 with open('api.key', 'r') as key:
     TOKEN = key.readline().strip()
-    print(TOKEN)
 
 with open('options.json', 'r') as options:
     OPTIONS = json.loads(options.read())
 
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def start(update, context):
-    update.message.reply_text(HOWTO)
+    keyboard = [
+                    [
+                        InlineKeyboardButton(option, callback_data=data)
+                        for data, option in list(OPTIONS.items())[4*row:4*(row+1)]
+                    ]
+                    for row in range(len(OPTIONS))
+                ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup)
+
+    return POLL
+
+
+def keyboard_handler(update, context):
+    query = update.callback_query
+    query.answer()
+    answer = query.data
+    context.user_data['answer'] = answer
+    query.edit_message_text(text="Qu'est-ce que {} a dit ?".format(OPTIONS[answer]))
 
 
 def poll(update, context):
-
-    data = update.message.text.split(' ')
-
-    if len(data) < 3:
-        update.message.reply_text('Wrong format, type /help for more info')
-        return
-
-    question = REPLY.format(' '.join(data[1:-1]))
-    answer = unidecode.unidecode(data[-1]).lower()
-
-    if answer not in OPTIONS.keys():
-        update.message.reply_text(f'{data[-1]} is not in CLIC')
-        return
-
-    display_options = list(OPTIONS.values())
-
+    question = 'Qui a dit ça : "{}"'.format(update.message.text)
+    answer = context.user_data['answer']
+    options = list(OPTIONS.values())
     if len(OPTIONS) > LIMIT:
-        display_options.remove(OPTIONS[answer])
-        choices = random.sample(display_options, LIMIT - 1)
+        options.remove(OPTIONS[answer])
+        choices = random.sample(options, LIMIT - 1)
         answer_id = random.randint(0, LIMIT - 1)
         choices.insert(answer_id, OPTIONS[answer])
     else:
-        choices = random.sample(display_options, LIMIT)
+        choices = random.sample(OPTIONS.values(), LIMIT)
         answer_id = choices.index(OPTIONS[answer])
 
     context.bot.send_poll(chat_id=update.effective_chat.id,
                           question=question,
                           options=choices,
-                          type=telegram.Poll.QUIZ,
+                          type=Poll.QUIZ,
                           correct_option_id=answer_id,
                           is_anonymous=False,
                           allows_multiple_answers=False)
 
+    return ConversationHandler.END
 
-# TODO: write a cleaner help message
-def help_handler(update, context):
-    update.message.reply_text(HOWTO)
+
+def help(update, context):
+    update.message.reply_text("Type /start to use me. I'll deliver you a poll that you can transfer to anyone!")
 
 
 if __name__ == '__main__':
-
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                        level=logging.INFO)
-    logger = logging.getLogger(__name__)
-
     updater = Updater(TOKEN, use_context=True)
     dp = updater.dispatcher
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(CommandHandler('poll', poll))
-    dp.add_handler(CommandHandler('help', help_handler))
 
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+        states={POLL: [MessageHandler(filters=Filters.text, callback=poll)]},
+        fallbacks=[]
+    )
+    dp.add_handler(conv_handler)
+    dp.add_handler(CallbackQueryHandler(keyboard_handler))
+    dp.add_handler(CommandHandler('help', help))
     updater.start_polling()
     updater.idle()
