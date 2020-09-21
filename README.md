@@ -3,15 +3,13 @@ _Qui a dit ça ? Le fameux jeu de la CLIC_
 
 ### Requirements
 
-Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/python-telegram-bot) for Python.
-You will also need [Unidecode](https://pypi.org/project/Unidecode/). Namely
+Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/python-telegram-bot) for Python. Namely
 
 ```
 $ pip install python-telegram-bot
-$ pip install unidecode
 ```
 
-See the Telegram API documentation to obtain your bot token, to be stored in a ```api.key``` file. Then simply launch the bot
+See the Telegram API documentation to obtain your bot token, to be stored in a ```.keys``` file under ```token=YOUR_TOKEN```. Then simply launch the bot
 ```
 $ python bot.py
 ```

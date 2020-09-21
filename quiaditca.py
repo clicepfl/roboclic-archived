@@ -2,19 +2,15 @@ import logging
 import random
 import json
 
-import unidecode
 from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, ConversationHandler, CallbackQueryHandler
 
 
 LIMIT = 10
-QUESTION, POLL = range(2)
+POLL = 0
 
-with open('api.key', 'r') as key:
-    TOKEN = key.readline().strip()
-
-with open('options.json', 'r') as options:
-    OPTIONS = json.loads(options.read())
+KEYS = dict(line.strip().split('=') for line in open('.keys'))
+OPTIONS = json.loads(open('options.json').read())
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -22,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 def start(update, context):
+    logger.info(f'Bot started by {update.message.from_user}')
+
     keyboard = [
                     [
                         InlineKeyboardButton(option, callback_data=data)
@@ -40,12 +38,15 @@ def keyboard_handler(update, context):
     query.answer()
     answer = query.data
     context.user_data['answer'] = answer
-    query.edit_message_text(text="Qu'est-ce que {} a dit ?".format(OPTIONS[answer]))
+    logger.info(f'Selected {OPTIONS[answer]}')
+    query.edit_message_text(text=f"Qu'est-ce que {OPTIONS[answer]} a dit ?")
 
 
 def poll(update, context):
-    question = 'Qui a dit ça : "{}"'.format(update.message.text)
     answer = context.user_data['answer']
+    logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
+    question = f'Qui a dit ça : "{update.message.text}"'
+
     options = list(OPTIONS.values())
     if len(OPTIONS) > LIMIT:
         options.remove(OPTIONS[answer])
@@ -67,12 +68,17 @@ def poll(update, context):
     return ConversationHandler.END
 
 
+def error(update, context):
+    logger.warning(f'Update "{update}" caused error "{context.error}"')
+
+
 def help(update, context):
     update.message.reply_text("Type /start to use me. I'll deliver you a poll that you can transfer to anyone!")
 
 
 if __name__ == '__main__':
-    updater = Updater(TOKEN, use_context=True)
+    logger.info(f'Keys: {KEYS}')
+    updater = Updater(token=KEYS['token'], use_context=True)
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
@@ -80,8 +86,10 @@ if __name__ == '__main__':
         states={POLL: [MessageHandler(filters=Filters.text, callback=poll)]},
         fallbacks=[]
     )
+
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
     dp.add_handler(CommandHandler('help', help))
+    dp.add_error_handler(error)
     updater.start_polling()
     updater.idle()
