@@ -30,7 +30,7 @@ def start(update, context):
                     for row in range(len(OPTIONS))
                 ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup)
+    update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup, quote=False)
 
     return POLL
 
