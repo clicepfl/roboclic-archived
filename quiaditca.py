@@ -39,7 +39,7 @@ def keyboard_handler(update, context):
     answer = query.data
     context.user_data['answer'] = answer
     logger.info(f'Selected {OPTIONS[answer]}')
-    query.edit_message_text(text=f"Qu'est-ce que {OPTIONS[answer]} a dit ?")
+    query.edit_message_text(text=f"Qu'est-ce qui a été dit ?")
 
 
 def poll(update, context):
