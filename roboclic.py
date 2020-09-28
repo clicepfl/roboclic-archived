@@ -28,7 +28,7 @@ def qalf(update, context):
     update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
-def kamelott(update, context):
+def kaamelott(update, context):
     w = countdown(2020, 11, 25)
     update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     )
 
     dp.add_handler(CommandHandler('qalf', qalf))
-    dp.add_handler(CommandHandler('kamelott', kamelott))
+    dp.add_handler(CommandHandler('kaamelott', kaamelott))
     dp.add_handler(CommandHandler('oss', oss))
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
