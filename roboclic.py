@@ -1,6 +1,7 @@
 import logging
 import random
 import json
+from datetime import datetime
 
 from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, ConversationHandler, CallbackQueryHandler
@@ -17,7 +18,27 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-def start(update, context):
+def countdown(*time):
+    r = datetime.now() - datetime(*time)
+    return r.days, r.seconds // 3600, r.seconds % 3600 // 60
+
+
+def qalf(update, context):
+    w = countdown(2020, 4, 26)
+    update.message.reply_text(f'{w.days}j {w.hours}h {w.minutes}m', quote=False)
+
+
+def kamelott(update, context):
+    w = countdown(2020, 11, 25)
+    update.message.reply_text(f'{w.days}j {w.hours}h {w.minutes}m', quote=False)
+
+
+def oss(update, context):
+        w = countdown(2021, 2, 3)
+        update.message.reply_text(f'{w.days}j {w.hours}h {w.minutes}m', quote=False)
+
+
+def poll(update, context):
     logger.info(f'Bot started by {update.message.from_user}')
 
     keyboard = [
@@ -42,7 +63,7 @@ def keyboard_handler(update, context):
     query.edit_message_text(text=f"Qu'est-ce qui a été dit ?")
 
 
-def poll(update, context):
+def create_poll(update, context):
     answer = context.user_data['answer']
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
@@ -73,7 +94,7 @@ def error(update, context):
 
 
 def help(update, context):
-    update.message.reply_text("Type /start to use me. I'll deliver you a poll that you can transfer to anyone!")
+    update.message.reply_text("Type /poll to use me.")
 
 
 if __name__ == '__main__':
@@ -82,11 +103,14 @@ if __name__ == '__main__':
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
-        states={POLL: [MessageHandler(filters=Filters.text, callback=poll)]},
+        entry_points=[CommandHandler('poll', poll)],
+        states={POLL: [MessageHandler(filters=Filters.text, callback=create_poll)]},
         fallbacks=[]
     )
 
+    dp.add_handler(CommandHandler('qalf', qalf))
+    dp.add_handler(CommandHandler('kamelott', kamelott))
+    dp.add_handler(CommandHandler('oss', oss))
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
     dp.add_handler(CommandHandler('help', help))
