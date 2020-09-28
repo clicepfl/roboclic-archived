@@ -19,23 +19,23 @@ logger = logging.getLogger(__name__)
 
 
 def countdown(*time):
-    r = datetime.now() - datetime(*time)
+    r = datetime(*time) - datetime.now()
     return r.days, r.seconds // 3600, r.seconds % 3600 // 60
 
 
 def qalf(update, context):
-    w = countdown(2020, 4, 26)
-    update.message.reply_text(f'{w.days}j {w.hours}h {w.minutes}m', quote=False)
+    w = countdown(2021, 4, 26)
+    update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def kamelott(update, context):
     w = countdown(2020, 11, 25)
-    update.message.reply_text(f'{w.days}j {w.hours}h {w.minutes}m', quote=False)
+    update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def oss(update, context):
         w = countdown(2021, 2, 3)
-        update.message.reply_text(f'{w.days}j {w.hours}h {w.minutes}m', quote=False)
+        update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def poll(update, context):
