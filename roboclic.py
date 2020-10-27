@@ -10,7 +10,7 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 
 LIMIT = 10
 POLL = 0
-JUL = [_ for _ in open('jul.txt', 'r').read().split('\n\n')]
+JUL = open('jul.txt', 'r').read().split('\n\n')
 
 KEYS = dict(line.strip().split('=') for line in open('.keys'))
 OPTIONS = json.loads(open('options.json').read())
