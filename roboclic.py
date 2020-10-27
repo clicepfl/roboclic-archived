@@ -50,8 +50,10 @@ def jul(update, context):
     punchline = random.choice(lyrics.splitlines())
     answer_id = choices.index(artist)
 
+    question = f"Bande organisée\nQui est l'auteur de la punchline qui suit ?\n{punchline}"
+
     context.bot.send_poll(chat_id=update.effective_chat.id,
-                          question=punchline,
+                          question=question,
                           options=choices,
                           type=Poll.QUIZ,
                           correct_option_id=answer_id,
