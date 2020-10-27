@@ -1,6 +1,7 @@
 import logging
 import random
 import json
+import re
 from datetime import datetime
 
 from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
@@ -9,6 +10,7 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 
 LIMIT = 10
 POLL = 0
+JUL = [_ for _ in open('jul.txt', 'r').read().split('\n\n')]
 
 KEYS = dict(line.strip().split('=') for line in open('.keys'))
 OPTIONS = json.loads(open('options.json').read())
@@ -36,6 +38,25 @@ def kaamelott(update, context):
 def oss(update, context):
         w = countdown(2021, 2, 3)
         update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
+
+
+def jul(update, context):
+    regex = r'\[Couplet \d : (.*?)\]'
+    choices = re.findall(regex, '$'.join(JUL))
+
+    block = random.choice(JUL)
+    artist = re.search(regex, block).groups()[0]
+    lyrics = block.split(']')[1]
+    punchline = random.choice(lyrics.splitlines())
+    answer_id = choices.index(artist)
+
+    context.bot.send_poll(chat_id=update.effective_chat.id,
+                          question=punchline,
+                          options=choices,
+                          type=Poll.QUIZ,
+                          correct_option_id=answer_id,
+                          is_anonymous=False,
+                          allows_multiple_answers=False)
 
 
 def poll(update, context):
@@ -111,6 +132,7 @@ if __name__ == '__main__':
     dp.add_handler(CommandHandler('qalf', qalf))
     dp.add_handler(CommandHandler('kaamelott', kaamelott))
     dp.add_handler(CommandHandler('oss', oss))
+    dp.add_handler(CommandHandler('jul', jul))
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
     dp.add_handler(CommandHandler('help', help))
