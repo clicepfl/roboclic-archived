@@ -47,7 +47,7 @@ def jul(update, context):
     block = random.choice(JUL)
     artist = re.search(regex, block).groups()[0]
     lyrics = block.splitlines()[1:]
-    punchline = random.choice(lyrics.splitlines())
+    punchline = random.choice(lyrics)
     answer_id = choices.index(artist)
 
     question = f"Qui est l'auteur de la punchline qui suit ?\n\"{punchline}\""
