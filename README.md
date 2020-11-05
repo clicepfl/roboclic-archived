@@ -9,10 +9,13 @@ Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/
 pip install python-telegram-bot
 ```
 
-See the Telegram API documentation to obtain your bot token, to be stored in a ```.keys``` file under ```token=YOUR_TOKEN```. Then simply launch the bot
+See the [Telegram Bot API documentation](https://core.telegram.org/bots) to obtain your bot token, to be stored in a ```.keys``` file under ```token=YOUR_TOKEN```. Then simply launch the bot
 ```
-python bot.py
+python roboclic.py
 ```
+
+### Features
+
 The bot offers various features, among which countdown commands for key events, a game consisting in guessing the author of rap punchlines from the French classic _Bande Organisée_, and a poll game consisting in guessing which CLIC member said a given sentence. Configuration files are available to change the poll options (i.e., the CLIC members) and the _Bande Organisée_ lyrics. The countdown commands are hardcoded in the main Python file.
 
 Enjoy!
