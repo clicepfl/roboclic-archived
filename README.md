@@ -1,18 +1,18 @@
-# Qui a dit ça ?
-_Qui a dit ça ? Le fameux jeu de la CLIC_
+# RoboCLIC ?
+_Le bot Telegram de la [CLIC](https://clic.epfl.ch)_
 
 ### Requirements
 
 Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/python-telegram-bot) for Python. Namely
 
 ```
-$ pip install python-telegram-bot
+pip install python-telegram-bot
 ```
 
 See the Telegram API documentation to obtain your bot token, to be stored in a ```.keys``` file under ```token=YOUR_TOKEN```. Then simply launch the bot
 ```
-$ python bot.py
+python bot.py
 ```
-You can edit the list of people _qui l'ont peut-être dit_ via a direct edit of the JSON file ```options.json```. The key should be a unique and simple identifier of a possibily fancy value. Typically, you want to add an entry of the form ```"francois": "François"``` or ```4: "François"```.
+The bot offers various features, among which countdown commands for key events, a game consisting in guessing the author of rap punchlines from the French classic _Bande Organisée_, and a poll game consisting in guessing which CLIC member said a given sentence. Configuration files are available to change the poll options (i.e., the CLIC members) and the _Bande Organisée_ lyrics. The countdown commands are hardcoded in the main Python file.
 
 Enjoy!
