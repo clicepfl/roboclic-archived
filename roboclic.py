@@ -24,11 +24,11 @@ logger = logging.getLogger(__name__)
 
 def quote(file):
     quotes = open(file, 'r').read().splitlines()
-    return random.choice(quotes).capitalize()
+    return random.choice(quotes)
 
 
 def rayan(update, context):
-    update.message.reply_text(quote(RAYAN), quote=False)
+    update.message.reply_text(quote(RAYAN).capitalize(), quote=False)
 
 
 def arthur(update, context):
