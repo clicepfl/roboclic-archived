@@ -29,7 +29,7 @@ def quote(file):
 
 def rayan(update, context):
     update.message.reply_text(quote(RAYAN), quote=False)
-    
+
 
 def arthur(update, context):
     update.message.reply_text(quote(ARTHUR), quote=False)
@@ -151,6 +151,8 @@ if __name__ == '__main__':
     dp.add_handler(CommandHandler('kaamelott', kaamelott))
     dp.add_handler(CommandHandler('oss', oss))
     dp.add_handler(CommandHandler('jul', jul))
+    dp.add_handler(CommandHandler('arthur', arthur))
+    dp.add_handler(CommandHandler('rayan', rayan))
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
     dp.add_handler(CommandHandler('help', help))
