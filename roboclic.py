@@ -10,7 +10,9 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 
 LIMIT = 10
 POLL = 0
-JUL = open('jul.txt', 'r').read().split('\n\n')
+JUL = 'jul.txt'
+RAYAN = 'rayan.txt'
+ARTHUR = 'arthur.txt'
 
 KEYS = dict(line.strip().split('=') for line in open('.keys'))
 OPTIONS = json.loads(open('options.json').read())
@@ -18,6 +20,19 @@ OPTIONS = json.loads(open('options.json').read())
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def quote(file):
+    quotes = open(file, 'r').read().splitlines()
+    return random.choice(quotes).capitalize()
+
+
+def rayan(update, context):
+    update.message.reply_text(quote(RAYAN), quote=False)
+    
+
+def arthur(update, context):
+    update.message.reply_text(quote(ARTHUR), quote=False)
 
 
 def countdown(*time):
@@ -36,15 +51,16 @@ def kaamelott(update, context):
 
 
 def oss(update, context):
-        w = countdown(2021, 2, 3)
-        update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
+    w = countdown(2021, 2, 3)
+    update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def jul(update, context):
     regex = r'\[Couplet \d : (.*?)\]'
-    choices = re.findall(regex, '$'.join(JUL))
+    song = open(JUL, 'r').read().split('\n\n')
+    choices = re.findall(regex, '$'.join(song))
 
-    block = random.choice(JUL)
+    block = random.choice(song)
     artist = re.search(regex, block).groups()[0]
     lyrics = block.splitlines()[1:]
     punchline = random.choice(lyrics)
