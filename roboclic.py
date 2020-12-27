@@ -16,6 +16,7 @@ ARTHUR = 'arthur.txt'
 
 KEYS = dict(line.strip().split('=') for line in open('.keys'))
 OPTIONS = json.loads(open('options.json').read())
+BIRTHDAYS = json.loads(open('birthday.json').read())
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -46,8 +47,9 @@ def qalf(update, context):
 
 
 def kaamelott(update, context):
-    w = countdown(2020, 11, 25)
-    update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
+    update.message.reply_text("Film reporté à 2021")
+    #w = countdown(2021, 11, 25)
+    #update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def oss(update, context):
@@ -126,6 +128,33 @@ def create_poll(update, context):
                           allows_multiple_answers=False)
 
     return ConversationHandler.END
+
+
+def birthday(update, context):
+    options = list(OPTIONS.values())
+    user_id = random.sample(list(OPTIONS), 1)
+
+    username = OPTIONS[user_id]
+    date = BIRTHDAYS[user_id]
+    
+    question = f"Qui est né le {date} ?"
+
+    if len(OPTIONS) > LIMIT:
+        options.remove(username)
+        choices = random.sample(options, LIMIT - 1)
+        answer_id = random.randint(0, LIMIT - 1)
+        choices.insert(answer_id, username)
+    else:
+        choices = random.sample(OPTIONS.values(), LIMIT)
+        answer_id = choices.index(OPTIONS[answer])
+
+    context.bot.send_poll(chat_id=update.effective_chat.id,
+                          question=question,
+                          options=choices,
+                          type=Poll.QUIZ,
+                          correct_option_id=answer_id,
+                          is_anonymous=False,
+                          allows_multiple_answers=False)
 
 
 def error(update, context):
