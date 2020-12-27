@@ -189,6 +189,8 @@ if __name__ == '__main__':
     dp.add_handler(CommandHandler('kaamelott', kaamelott))
     dp.add_handler(CommandHandler('oss', oss))
     dp.add_handler(CommandHandler('jul', jul))
+    dp.add_handler(CommandHandler('hugo', hugo))
+    dp.add_handler(CommandHandler('reuf', reuf))
     dp.add_handler(CommandHandler('arthur', arthur))
     dp.add_handler(CommandHandler('rayan', rayan))
     dp.add_handler(CommandHandler('birthday', birthday))
