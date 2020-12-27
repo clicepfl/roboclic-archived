@@ -132,7 +132,7 @@ def create_poll(update, context):
 
 def birthday(update, context):
     options = list(OPTIONS.values())
-    user_id = random.sample(list(OPTIONS), 1)
+    user_id = random.sample(list(OPTIONS), 1)[0]
 
     username = OPTIONS[user_id]
     date = BIRTHDAYS[user_id]
