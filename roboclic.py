@@ -109,15 +109,16 @@ def create_poll(update, context):
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
 
+    username = OPTIONS[answer]
     options = list(OPTIONS.values())
     if len(OPTIONS) > LIMIT:
-        options.remove(OPTIONS[answer])
+        options.remove(username)
         choices = random.sample(options, LIMIT - 1)
         answer_id = random.randint(0, LIMIT - 1)
-        choices.insert(answer_id, OPTIONS[answer])
+        choices.insert(answer_id, username)
     else:
         choices = random.sample(OPTIONS.values(), LIMIT)
-        answer_id = choices.index(OPTIONS[answer])
+        answer_id = choices.index(username)
 
     context.bot.send_poll(chat_id=update.effective_chat.id,
                           question=question,
@@ -146,7 +147,7 @@ def birthday(update, context):
         choices.insert(answer_id, username)
     else:
         choices = random.sample(OPTIONS.values(), LIMIT)
-        answer_id = choices.index(OPTIONS[answer])
+        answer_id = choices.index(username)
 
     context.bot.send_poll(chat_id=update.effective_chat.id,
                           question=question,
