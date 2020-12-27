@@ -158,6 +158,14 @@ def birthday(update, context):
                           allows_multiple_answers=False)
 
 
+def reuf(update, context):
+    update.message.reply_text("+41 76 399 46 20 le téléphone du reuf !", quote=False)
+
+
+def hugo(update, context):
+    update.message.reply_text("???", quote=True)
+
+
 def error(update, context):
     logger.warning(f'Update "{update}" caused error "{context.error}"')
 
