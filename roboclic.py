@@ -136,7 +136,7 @@ def birthday(update, context):
 
     username = OPTIONS[user_id]
     date = BIRTHDAYS[user_id]
-    
+
     question = f"Qui est né le {date} ?"
 
     if len(OPTIONS) > LIMIT:
@@ -182,6 +182,7 @@ if __name__ == '__main__':
     dp.add_handler(CommandHandler('jul', jul))
     dp.add_handler(CommandHandler('arthur', arthur))
     dp.add_handler(CommandHandler('rayan', rayan))
+    dp.add_handler(CommandHandler('birthday', birthday))
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
     dp.add_handler(CommandHandler('help', help))
