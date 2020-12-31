@@ -2,6 +2,7 @@ import logging
 import random
 import json
 import re
+import pytz
 from datetime import datetime
 
 from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
@@ -57,7 +58,8 @@ def get_time(timedelta):
 
 
 def year(update, contact):
-    today = datetime.now()
+    timezone = pytz.timezone('Europe/Zurich')
+    today = datetime.now(timezone)
     start, end = datetime(today.year, 1, 1, 0, 0), datetime(today.year, 12, 31, 23, 59)
 
     passed = today - start
