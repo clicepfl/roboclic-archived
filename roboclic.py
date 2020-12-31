@@ -58,20 +58,20 @@ def get_time(timedelta):
 
 def year(update, contact):
     today = datetime.now()
-    start, end = datetime(today.year, 1, 1), datetime(today.year, 12, 31)
+    start, end = datetime(today.year, 1, 1, 0, 0), datetime(today.year, 12, 31, 23, 59)
 
     passed = today - start
     total = end - start
 
-    percent = get_time(passed) / get_time(total.days) * 100
+    percent = get_time(passed) / get_time(total) * 100
     display = progression_bar(percent)
 
-    update.message.reply_text('{:2f} {}'.format(percent, display))
+    update.message.reply_text('{:.2f}%\n{}'.format(percent, display))
 
 
 def progression_bar(percent):
-    tiles = int(round(percent))
-    return '[' + '#' * tiles + '-' * (100 - tiles) + ']'
+    tiles = int(round(percent / 4))
+    return '[' + '#' * tiles + '-' * (25 - tiles) + ']'
 
 
 def oss(update, context):
