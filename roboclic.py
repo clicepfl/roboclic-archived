@@ -60,7 +60,8 @@ def get_time(timedelta):
 def year(update, contact):
     timezone = pytz.timezone('Europe/Zurich')
     today = datetime.now(timezone)
-    start, end = datetime(today.year, 1, 1, 0, 0), datetime(today.year, 12, 31, 23, 59)
+    start = datetime(today.year, 1, 1, 0, 0).astimezone(timezone)
+    end = datetime(today.year, 12, 31, 23, 59).astimezone(timezone)
 
     passed = today - start
     total = end - start
