@@ -66,7 +66,7 @@ def year(update, contact):
     percent = get_time(passed) / get_time(total) * 100
     display = progression_bar(percent)
 
-    update.message.reply_text('{:.2f}%\n{}'.format(percent, display))
+    update.message.reply_text('{:.2f}%\n{}'.format(percent, display), quote=False)
 
 
 def progression_bar(percent):
