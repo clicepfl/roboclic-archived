@@ -52,6 +52,28 @@ def kaamelott(update, context):
     #update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
+def get_time(timedelta):
+    return timedelta.days * 24 * 60 * 60 + timedelta.seconds
+
+
+def year(update, contact):
+    today = datetime.now()
+    start, end = datetime(today.year, 1, 1), datetime(today.year, 12, 31)
+
+    passed = today - start
+    total = end - start
+
+    percent = get_time(passed) / get_time(total.days) * 100
+    display = progression_bar(percent)
+
+    update.message.reply_text('{:2f} {}'.format(percent, display))
+
+
+def progression_bar(percent):
+    tiles = int(round(percent))
+    return '[' + '#' * tiles + '-' * (100 - tiles) + ']'
+
+
 def oss(update, context):
     w = countdown(2021, 2, 3)
     update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
@@ -194,6 +216,7 @@ if __name__ == '__main__':
     dp.add_handler(CommandHandler('arthur', arthur))
     dp.add_handler(CommandHandler('rayan', rayan))
     dp.add_handler(CommandHandler('birthday', birthday))
+    dp.add_handler(CommandHandler('year', year))
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
     dp.add_handler(CommandHandler('help', help))
