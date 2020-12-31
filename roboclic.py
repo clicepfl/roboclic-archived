@@ -70,8 +70,9 @@ def year(update, contact):
 
 
 def progression_bar(percent):
-    tiles = int(round(percent / 4))
-    return '[' + '#' * tiles + '-' * (25 - tiles) + ']'
+    total = 25
+    tiles = min(total, int(round(percent / 4)))
+    return '[' + '#' * tiles + '-' * (total - tiles) + ']'
 
 
 def oss(update, context):
