@@ -7,7 +7,7 @@ DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 cd $DIR
 
 git stash
-git switch master
+git checkout master
 git pull
 
 systemctl start roboclic
