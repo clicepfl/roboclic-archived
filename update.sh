@@ -1,6 +1,6 @@
 #!/bin/bash
 
-systemctl stop roboclic
+# DO NOT LAUNCH as sudo, otherwise the wrong key will be fetched
 
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
@@ -10,4 +10,4 @@ git stash
 git checkout master
 git pull
 
-systemctl start roboclic
+systemctl restart roboclic
