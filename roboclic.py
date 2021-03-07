@@ -14,8 +14,16 @@ POLL = 0
 JUL = 'jul.txt'
 RAYAN = 'rayan.txt'
 ARTHUR = 'arthur.txt'
+normal_commands = ['qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan', 'birthday', 'year']
+special_commands = ['poll', 'help']
+explanations = {}
+for line in open("helper_texts.txt"):
+    (fname, help_text) = line.split(' ', 1)
+    explanations[fname] = help_text
 
 KEYS = dict(line.strip().split('=') for line in open('.keys'))
+for line in open('.keys'):
+    print(line)
 OPTIONS = json.loads(open('options.json').read())
 BIRTHDAYS = json.loads(open('birthday.json').read())
 
@@ -24,11 +32,47 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
+# Helper functions
 def quote(file):
+    """
+    Selects random line from file
+    """
     quotes = open(file, 'r').read().splitlines()
     return random.choice(quotes)
 
 
+def countdown(*time):
+    """
+    Returns time left until given time, as (days, hours, minutes)
+    """
+    r = datetime(*time) - datetime.now()
+    return r.days, r.seconds // 3600, r.seconds % 3600 // 60
+
+
+def get_time(timedelta):
+    """
+    Number of seconds in a time interval
+    """
+    return timedelta.days * 24 * 60 * 60 + timedelta.seconds
+
+
+def progression_bar(percent):
+    """
+    ASCII progress bar given a percentage
+    """
+    total = 25
+    tiles = min(total, int(round(percent / 4)))
+    return '[' + '#' * tiles + '-' * (total - tiles) + ']'
+
+
+def error(update, context):
+    """
+    Error handler
+    """
+    logger.warning(f'Update "{update}" caused error "{context.error}"')
+
+
+# Commands
 def rayan(update, context):
     update.message.reply_text(quote(RAYAN).capitalize(), quote=False)
 
@@ -37,24 +81,15 @@ def arthur(update, context):
     update.message.reply_text(quote(ARTHUR), quote=False)
 
 
-def countdown(*time):
-    r = datetime(*time) - datetime.now()
-    return r.days, r.seconds // 3600, r.seconds % 3600 // 60
-
-
 def qalf(update, context):
     w = countdown(2021, 4, 26)
     update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def kaamelott(update, context):
-    update.message.reply_text("Film reporté à 2021")
-    #w = countdown(2021, 11, 25)
-    #update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
-
-
-def get_time(timedelta):
-    return timedelta.days * 24 * 60 * 60 + timedelta.seconds
+    update.message.reply_text("Mdr jamais")
+    # w = countdown(2021, 11, 25)
+    # update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def year(update, contact):
@@ -72,14 +107,8 @@ def year(update, contact):
     update.message.reply_text('{:.2f}%\n{}'.format(percent, display), quote=False)
 
 
-def progression_bar(percent):
-    total = 25
-    tiles = min(total, int(round(percent / 4)))
-    return '[' + '#' * tiles + '-' * (total - tiles) + ']'
-
-
 def oss(update, context):
-    w = countdown(2021, 2, 3)
+    w = countdown(2021, 4, 14)
     update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
@@ -192,12 +221,14 @@ def hugo(update, context):
     update.message.reply_text("???", quote=False)
 
 
-def error(update, context):
-    logger.warning(f'Update "{update}" caused error "{context.error}"')
-
-
 def help(update, context):
-    update.message.reply_text("Type /poll to use me.")
+    if len(context.args) > 0:
+        update.message.reply_text(explanations.get(context.args[0], 'Not a command'))
+    else :
+        available_normal_commands = '\n'.join(normal_commands) + '\n'
+        available_special_commands = '\n'.join(special_commands) + '\n'
+        update.message.reply_text("Available commands : \n{}{}Use help 'command_name' for more info"
+                                  .format(available_normal_commands, available_special_commands))
 
 
 if __name__ == '__main__':
@@ -211,19 +242,12 @@ if __name__ == '__main__':
         fallbacks=[]
     )
 
-    dp.add_handler(CommandHandler('qalf', qalf))
-    dp.add_handler(CommandHandler('kaamelott', kaamelott))
-    dp.add_handler(CommandHandler('oss', oss))
-    dp.add_handler(CommandHandler('jul', jul))
-    dp.add_handler(CommandHandler('hugo', hugo))
-    dp.add_handler(CommandHandler('reuf', reuf))
-    dp.add_handler(CommandHandler('arthur', arthur))
-    dp.add_handler(CommandHandler('rayan', rayan))
-    dp.add_handler(CommandHandler('birthday', birthday))
-    dp.add_handler(CommandHandler('year', year))
     dp.add_handler(conv_handler)
     dp.add_handler(CallbackQueryHandler(keyboard_handler))
-    dp.add_handler(CommandHandler('help', help))
     dp.add_error_handler(error)
+    dp.add_handler(CommandHandler('help', help, pass_args=True))
+
+    for fname in normal_commands:
+        dp.add_handler(CommandHandler(fname, globals().get(fname)))
     updater.start_polling()
     updater.idle()
