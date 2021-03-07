@@ -13,11 +13,6 @@ def open_utf8_r(filename, mode='r'):
     return open(filename, mode, encoding='utf-8')
 
 
-def parse_token(l):
-    (key, *token) = l.strip().split('=')
-    return key, token
-
-
 LIMIT = 10
 POLL = 0
 JUL = 'jul.txt'
@@ -32,7 +27,7 @@ for line in open_utf8_r(HELPER_TEXTS):
     (fname, help_text) = line.split(' ', 1)
     explanations[fname] = help_text
 
-KEYS = dict(parse_token(line) for line in open_utf8_r('.keys'))
+KEYS = dict(line.strip().split('=') for line in open_utf8_r('.keys'))
 OPTIONS = json.loads(open('options.json').read())
 BIRTHDAYS = json.loads(open('birthday.json').read())
 
@@ -234,8 +229,8 @@ def help(update, context):
     if len(context.args) > 0:
         update.message.reply_text(explanations.get(context.args[0], 'Not a command'))
     else:
-        available_normal_commands = '\n'.join(normal_commands) + '\n'
-        available_special_commands = '\n'.join(special_commands) + '\n'
+        available_normal_commands = '\n'.join(map(lambda s: '/' + s, normal_commands)) + '\n'
+        available_special_commands = '\n'.join(map(lambda s: '/' + s, special_commands)) + '\n'
         update.message.reply_text("Available commands : \n{}{}Use help 'command_name' for more info"
                                   .format(available_normal_commands, available_special_commands))
 
