@@ -9,21 +9,30 @@ from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, ConversationHandler, CallbackQueryHandler
 
 
+def open_utf8_r(filename, mode='r'):
+    return open(filename, mode, encoding='utf-8')
+
+
+def parse_token(l):
+    (key, *token) = l.strip().split('=')
+    return key, token
+
+
 LIMIT = 10
 POLL = 0
 JUL = 'jul.txt'
 RAYAN = 'rayan.txt'
 ARTHUR = 'arthur.txt'
+HELPER_TEXTS = "helper_texts.txt"
 normal_commands = ['qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan', 'birthday', 'year']
 special_commands = ['poll', 'help']
+
 explanations = {}
-for line in open("helper_texts.txt"):
+for line in open_utf8_r(HELPER_TEXTS):
     (fname, help_text) = line.split(' ', 1)
     explanations[fname] = help_text
 
-KEYS = dict(line.strip().split('=') for line in open('.keys'))
-for line in open('.keys'):
-    print(line)
+KEYS = dict(parse_token(line) for line in open_utf8_r('.keys'))
 OPTIONS = json.loads(open('options.json').read())
 BIRTHDAYS = json.loads(open('birthday.json').read())
 
@@ -37,7 +46,7 @@ def quote(file):
     """
     Selects random line from file
     """
-    quotes = open(file, 'r').read().splitlines()
+    quotes = open_utf8_r(file).read().splitlines()
     return random.choice(quotes)
 
 
@@ -114,7 +123,7 @@ def oss(update, context):
 
 def jul(update, context):
     regex = r'\[Couplet \d : (.*?)\]'
-    song = open(JUL, 'r').read().split('\n\n')
+    song = open_utf8_r(JUL).read().split('\n\n')
     choices = re.findall(regex, '$'.join(song))
 
     block = random.choice(song)
@@ -224,7 +233,7 @@ def hugo(update, context):
 def help(update, context):
     if len(context.args) > 0:
         update.message.reply_text(explanations.get(context.args[0], 'Not a command'))
-    else :
+    else:
         available_normal_commands = '\n'.join(normal_commands) + '\n'
         available_special_commands = '\n'.join(special_commands) + '\n'
         update.message.reply_text("Available commands : \n{}{}Use help 'command_name' for more info"
