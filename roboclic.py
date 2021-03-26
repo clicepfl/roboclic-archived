@@ -19,8 +19,8 @@ JUL = 'jul.txt'
 RAYAN = 'rayan.txt'
 ARTHUR = 'arthur.txt'
 HELPER_TEXTS = "helper_texts.txt"
-normal_commands = ['qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan', 'birthday', 'year']
-special_commands = ['poll', 'help']
+NORMAL_COMMANDS = ['qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan', 'birthday', 'year']
+SPECIAL_COMMANDS = ['poll', 'help']
 
 explanations = {}
 for line in open_utf8_r(HELPER_TEXTS):
@@ -66,7 +66,7 @@ def progression_bar(percent):
     """
     total = 25
     tiles = min(total, int(round(percent / 4)))
-    return '[' + '#' * tiles + '-' * (total - tiles) + ']'
+    return '[' + '#' * tiles + '=' * (total - tiles) + ']'
 
 
 def error(update, context):
@@ -229,9 +229,9 @@ def help(update, context):
     if len(context.args) > 0:
         update.message.reply_text(explanations.get(context.args[0], 'Not a command'))
     else:
-        available_normal_commands = '\n'.join(map(lambda s: '/' + s, normal_commands)) + '\n'
-        available_special_commands = '\n'.join(map(lambda s: '/' + s, special_commands)) + '\n'
-        update.message.reply_text("Available commands : \n{}{}Use help 'command_name' for more info"
+        available_normal_commands = '\n'.join(map(lambda s: '/' + s, NORMAL_COMMANDS))
+        available_special_commands = '\n'.join(map(lambda s: '/' + s, SPECIAL_COMMANDS))
+        update.message.reply_text("Commandes disponibles :\n{}\n{}\nUtiliser 'help <command_name>' pour plus d'infos"
                                   .format(available_normal_commands, available_special_commands))
 
 
@@ -251,7 +251,7 @@ if __name__ == '__main__':
     dp.add_error_handler(error)
     dp.add_handler(CommandHandler('help', help, pass_args=True))
 
-    for fname in normal_commands:
+    for fname in NORMAL_COMMANDS:
         dp.add_handler(CommandHandler(fname, globals().get(fname)))
     updater.start_polling()
     updater.idle()
