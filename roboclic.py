@@ -227,7 +227,7 @@ def hugo(update, context):
 
 def help(update, context):
     if len(context.args) > 0:
-        update.message.reply_text(explanations.get(context.args[0], 'Not a command'))
+        update.message.reply_text(explanations.get(context.args[0], "Cette commande n'existe pas"))
     else:
         available_normal_commands = '\n'.join(map(lambda s: '/' + s, NORMAL_COMMANDS))
         available_special_commands = '\n'.join(map(lambda s: '/' + s, SPECIAL_COMMANDS))
