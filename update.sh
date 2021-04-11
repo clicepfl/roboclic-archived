@@ -10,4 +10,5 @@ git stash
 git checkout master
 git pull
 
+pip3 install python-telegram-bot
 systemctl restart roboclic
