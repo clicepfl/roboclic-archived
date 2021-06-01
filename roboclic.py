@@ -19,7 +19,7 @@ JUL = 'jul.txt'
 RAYAN = 'rayan.txt'
 ARTHUR = 'arthur.txt'
 HELPER_TEXTS = "helper_texts.txt"
-normal_commands = ['qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan', 'birthday', 'year']
+normal_commands = ['qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan', 'birthday', 'bureau', 'year']
 special_commands = ['poll', 'help']
 
 explanations = {}
@@ -223,6 +223,17 @@ def reuf(update, context):
 
 def hugo(update, context):
     update.message.reply_text("???", quote=False)
+
+
+def bureau(update, context):
+    question = "Qui est bureau ?"
+    options = ["Je suis actuellement au bureau", "Je suis autour du bureau", "J'y suis pas"]
+    context.bot.send_poll(chat_id=update.effecctive_chat.id,
+                          question=question,
+                          options=options,
+                          type=Poll.REGULAR,
+                          is_anonymous=False,
+                          allows_multiple_answers=False)
 
 
 def help(update, context):
