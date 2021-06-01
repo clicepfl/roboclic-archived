@@ -227,10 +227,10 @@ def hugo(update, context):
 
 def bureau(update, context):
     question = "Qui est bureau ?"
-    options = ["Je suis actuellement au bureau", "Je suis autour du bureau", "J'y suis pas"]
-    context.bot.send_poll(chat_id=update.effecctive_chat.id,
+    choices = ["Je suis actuellement au bureau", "Je suis autour du bureau", "J'y suis pas"]
+    context.bot.send_poll(chat_id=update.effective_chat.id,
                           question=question,
-                          options=options,
+                          options=choices,
                           type=Poll.REGULAR,
                           is_anonymous=False,
                           allows_multiple_answers=False)
