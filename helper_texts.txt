@@ -5,8 +5,8 @@ jul Test de culture classique
 hugo ???
 reuf reuf
 arthur He said it
-rayan rayane?
+rayan Bryane ?
 birthday birthdays
-year how far we are from realizing that years going by brings no end to our existential suffering
+year What are we if not slaves to this torment?
 poll Qui a dit ça ?
-help Use /help command_name to get info about a command, or /help alone to get the list of commands
+help Use /help 'command_name' to get info about a command, or /help alone to get the list of commands

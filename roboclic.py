@@ -19,13 +19,16 @@ JUL = 'jul.txt'
 RAYAN = 'rayan.txt'
 ARTHUR = 'arthur.txt'
 HELPER_TEXTS = "helper_texts.txt"
-normal_commands = ['qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan', 'birthday', 'year']
-special_commands = ['poll', 'help']
+NORMAL_COMMANDS = {
+    'qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan',
+    'birthday', 'bureau', 'year'
+}
+SPECIAL_COMMANDS = {'poll', 'help'}
 
-explanations = {}
+EXPLANATIONS = {}
 for line in open_utf8_r(HELPER_TEXTS):
     (fname, help_text) = line.split(' ', 1)
-    explanations[fname] = help_text
+    EXPLANATIONS[fname] = help_text
 
 KEYS = dict(line.strip().split('=') for line in open_utf8_r('.keys'))
 OPTIONS = json.loads(open('options.json').read())
@@ -224,14 +227,32 @@ def hugo(update, context):
     update.message.reply_text("???", quote=False)
 
 
+def bureau(update, context):
+    question = "Qui est bureau ?"
+    choices = [
+            "Je suis actuellement au bureau", 
+            "Je suis autour du bureau",
+            "Je compte m'y rendre bientôt",
+            "J'y suis pas"
+            ]
+    context.bot.send_poll(chat_id=update.effective_chat.id,
+                          question=question,
+                          options=choices,
+                          type=Poll.REGULAR,
+                          is_anonymous=False,
+                          allows_multiple_answers=False)
+
+
 def help(update, context):
     if len(context.args) > 0:
-        update.message.reply_text(explanations.get(context.args[0], 'Not a command'))
+        update.message.reply_text(EXPLANATIONS.get(context.args[0], 'Not a command'))
     else:
-        available_normal_commands = '\n'.join(map(lambda s: '/' + s, normal_commands)) + '\n'
-        available_special_commands = '\n'.join(map(lambda s: '/' + s, special_commands)) + '\n'
-        update.message.reply_text("Available commands : \n{}{}Use help 'command_name' for more info"
-                                  .format(available_normal_commands, available_special_commands))
+        display = lambda commands: '\n'.join('/' + command for command in commands)
+        commands = display(NORMAL_COMMANDS.union(SPECIAL_COMMANDS))
+        update.message.reply_text(
+            "Available commands:\n{}\nUse help 'command_name' for more info"
+            .format(commands)
+        )
 
 
 if __name__ == '__main__':
@@ -250,7 +271,7 @@ if __name__ == '__main__':
     dp.add_error_handler(error)
     dp.add_handler(CommandHandler('help', help, pass_args=True))
 
-    for fname in normal_commands:
+    for fname in NORMAL_COMMANDS:
         dp.add_handler(CommandHandler(fname, globals().get(fname)))
     updater.start_polling()
     updater.idle()
