@@ -91,9 +91,8 @@ def qalf(update, context):
 
 
 def kaamelott(update, context):
-    update.message.reply_text("Mdr jamais")
-    # w = countdown(2021, 11, 25)
-    # update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
+    w = countdown(2021, 7, 21)
+    update.message.reply_text('{}j {}h {}m'.format(*w), quote=False)
 
 
 def year(update, contact):
