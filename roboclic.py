@@ -20,7 +20,7 @@ RAYAN = 'rayan.txt'
 ARTHUR = 'arthur.txt'
 HELPER_TEXTS = "helper_texts.txt"
 NORMAL_COMMANDS = {
-    'jul', 'hugo', 'reuf', 'arthur', 'rayan',
+    'jul', 'hugo', 'reuf', 'noel', 'arthur', 'rayan',
     'birthday', 'bureau', 'year', 'stats'
 }
 SPECIAL_COMMANDS = {'poll', 'help'}
