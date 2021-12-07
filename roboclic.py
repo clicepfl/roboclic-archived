@@ -160,9 +160,9 @@ def stats(update, context):
     else:    
         # cumbersome formatting
         query_user = context.args[0].lower().replace('é', 'e').replace('ï', 'i').replace('ë', 'e')
-        user = OPTIONS.get(query_user, query_user)
+        user = OPTIONS.get(query_user, query_user.title())
         score = stats.get(query_user, 0)
-        update.message.reply_text(f'{user}: {score}')
+        update.message.reply_text(f'{user}: {score}', quote=False)
 
 
 
@@ -193,7 +193,6 @@ def keyboard_handler(update, context):
 
 
 def create_poll(update, context):
-    update.message.delete()
     answer = context.user_data['answer']
     increment_stats(answer, 'stats.json')
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
@@ -217,6 +216,7 @@ def create_poll(update, context):
                           correct_option_id=answer_id,
                           is_anonymous=False,
                           allows_multiple_answers=False)
+    update.message.delete()
 
     return ConversationHandler.END
 
