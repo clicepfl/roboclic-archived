@@ -188,11 +188,14 @@ def keyboard_handler(update, context):
     query.answer()
     answer = query.data
     context.user_data.update({'answer': answer})
+    context.bot_data.update({'callback_messsage': query.message})
     logger.info(f'Selected {OPTIONS[answer]}')
     query.edit_message_text(text=f"Qu'est-ce qui a été dit ?")
 
 
 def create_poll(update, context):
+    previous_message = context.bot_data['callback_message']
+    context.bot.delete_message(previous_message.chat.id, previous_message.message_id)
     answer = context.user_data['answer']
     increment_stats(answer, 'stats.json')
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
