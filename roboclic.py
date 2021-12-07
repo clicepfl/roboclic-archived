@@ -20,8 +20,8 @@ RAYAN = 'rayan.txt'
 ARTHUR = 'arthur.txt'
 HELPER_TEXTS = "helper_texts.txt"
 NORMAL_COMMANDS = {
-    'qalf', 'kaamelott', 'oss', 'jul', 'hugo', 'reuf', 'arthur', 'rayan',
-    'birthday', 'bureau', 'year'
+    'jul', 'hugo', 'reuf', 'arthur', 'rayan',
+    'birthday', 'bureau', 'year', 'stats'
 }
 SPECIAL_COMMANDS = {'poll', 'help'}
 
@@ -31,8 +31,8 @@ for line in open_utf8_r(HELPER_TEXTS):
     EXPLANATIONS[fname] = help_text
 
 KEYS = dict(line.strip().split('=') for line in open_utf8_r('.keys'))
-OPTIONS = json.loads(open('options.json').read())
-BIRTHDAYS = json.loads(open('birthday.json').read())
+OPTIONS = json.load(open('options.json'))
+BIRTHDAYS = json.load(open('birthday.json'))
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -139,6 +139,29 @@ def jul(update, context):
                           is_anonymous=False,
                           allows_multiple_answers=False)
 
+def increment_stats(updated_user, stats_file):
+    if not updated_user in OPTIONS:
+        return
+    stats = json.load(open(stats_file))
+    stats.update({updated_user: stats.get(updated_user, 0) + 1 })
+    json.dump(stats, open(stats_file, 'w'))
+
+
+def stats(update, context):
+    stats = json.load(open('stats.json'))
+    if not len(context.args):
+        text = ''
+        for user, score in sorted(stats.items(), key=lambda t: t[1], reverse=True):
+            text += (f'{OPTIONS[user]}: {score}\n')
+        update.message.reply_text(text, quote=False)
+    else:    
+        # cumbersome formatting
+        query_user = context.args[0].lower().replace('é', 'e').replace('ï', 'i').replace('ë', 'e')
+        user = OPTIONS.get(query_user, query_user)
+        score = stats.get(query_user, 0)
+        update.message.reply_text(f'{user}: {score}')
+
+
 
 def poll(update, context):
     logger.info(f'Bot started by {update.message.from_user}')
@@ -152,6 +175,7 @@ def poll(update, context):
                 ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup, quote=False)
+    update.message.delete()
 
     return POLL
 
@@ -160,13 +184,15 @@ def keyboard_handler(update, context):
     query = update.callback_query
     query.answer()
     answer = query.data
-    context.user_data['answer'] = answer
+    context.user_data.update({'answer': answer})
     logger.info(f'Selected {OPTIONS[answer]}')
     query.edit_message_text(text=f"Qu'est-ce qui a été dit ?")
 
 
 def create_poll(update, context):
+    update.message.delete()
     answer = context.user_data['answer']
+    increment_stats(answer, 'stats.json')
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
 
@@ -218,9 +244,14 @@ def birthday(update, context):
                           is_anonymous=False,
                           allows_multiple_answers=False)
 
+def telephone_du(reuf='reuf'):
+    return f"+41 76 399 46 20 le téléphone du {reuf} !"
+
+def noel(update, context):
+    update.message.reply_text(telephone_du('père Noël'), quote=False)
 
 def reuf(update, context):
-    update.message.reply_text("+41 76 399 46 20 le téléphone du reuf !", quote=False)
+    update.message.reply_text(telephone_du(), quote=False)
 
 
 def hugo(update, context):
@@ -228,7 +259,7 @@ def hugo(update, context):
 
 
 def bureau(update, context):
-    question = "Qui est bureau ?"
+    question = "Qui est au bureau ?"
     choices = [
             "Je suis actuellement au bureau", 
             "Je suis autour du bureau",
@@ -247,7 +278,8 @@ def help(update, context):
     if len(context.args) > 0:
         update.message.reply_text(EXPLANATIONS.get(context.args[0], 'Not a command'))
     else:
-        display = lambda commands: '\n'.join('/' + command for command in commands)
+        def display(commands):
+            return ('\n'.join('/' + command) for command in commands)
         commands = display(NORMAL_COMMANDS.union(SPECIAL_COMMANDS))
         update.message.reply_text(
             "Available commands:\n{}\nUse help 'command_name' for more info"
