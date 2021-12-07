@@ -188,7 +188,7 @@ def keyboard_handler(update, context):
     query.answer()
     answer = query.data
     context.user_data.update({'answer': answer})
-    context.bot_data.update({'callback_messsage': query.message})
+    context.bot_data.update({'callback_message': query.message})
     logger.info(f'Selected {OPTIONS[answer]}')
     query.edit_message_text(text=f"Qu'est-ce qui a été dit ?")
 
