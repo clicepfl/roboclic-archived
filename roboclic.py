@@ -143,7 +143,7 @@ def increment_stats(updated_user, stats_file):
     if not updated_user in OPTIONS:
         return
     stats = json.load(open(stats_file))
-    stats.update({updated_user: stats[updated_user] + 1 })
+    stats.update({updated_user: stats.get(updated_user, 0) + 1 })
     json.dump(stats, open(stats_file, 'w'))
 
 
