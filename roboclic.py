@@ -12,7 +12,6 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 def open_utf8_r(filename, mode='r'):
     return open(filename, mode, encoding='utf-8')
 
-
 LIMIT = 10
 POLL = 0
 JUL = 'jul.txt'
@@ -167,7 +166,7 @@ def stats(update, context):
 
 
 def poll(update, context):
-    logger.info(f'Bot started by {update.message.from_user}')
+    logger.info(f'Poll started by:\n{update}')
 
     keyboard = [
                     [
@@ -188,16 +187,18 @@ def keyboard_handler(update, context):
     query.answer()
     answer = query.data
     context.user_data.update({'answer': answer})
-    context.bot_data.update({'callback_message': query.message})
+    context.user_data.update({'callback_message': query.message})
     logger.info(f'Selected {OPTIONS[answer]}')
     query.edit_message_text(text=f"Qu'est-ce qui a été dit ?")
 
 
 def create_poll(update, context):
-    previous_message = context.bot_data['callback_message']
-    context.bot.delete_message(previous_message.chat.id, previous_message.message_id)
+    chat_id = update.message.chat.id
+    previous_message = context.user_data['callback_message']
+    context.bot.delete_message(chat_id, previous_message.message_id)
     answer = context.user_data['answer']
-    increment_stats(answer, 'stats.json')
+    if chat_id in set([KEYS['clic'], KEYS['clic_family']]):
+        increment_stats(answer, 'stats.json')
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
 
