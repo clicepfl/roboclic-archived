@@ -29,7 +29,7 @@ for line in open_utf8_r(HELPER_TEXTS):
     (fname, help_text) = line.split(' ', 1)
     EXPLANATIONS[fname] = help_text
 
-KEYS = dict(line.strip().split('=') for line in open_utf8_r('.keys'))
+KEYS = json.load(open('.keys'))
 OPTIONS = json.load(open('options.json'))
 BIRTHDAYS = json.load(open('birthday.json'))
 
@@ -202,7 +202,7 @@ def create_poll(update, context):
     except Exception:
         logger.info(f'Could not delete message {previous_message.message_id}')
     answer = context.user_data['answer']
-    if chat_id in set([KEYS.get('clic', chat_id), KEYS.get('clic_family', chat_id)]):
+    if chat_id in KEYS.get('groups', {chat_id}):
         increment_stats(answer, 'stats.json')
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
