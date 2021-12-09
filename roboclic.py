@@ -37,7 +37,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 # Helper functions
 def quote(file):
     """
@@ -163,9 +162,9 @@ def stats(update, context):
         update.message.reply_text(f'{user}: {score}', quote=False)
 
 
-
 def poll(update, context):
     logger.info(f'Poll started by:\n{update}')
+    context.user_data.update({'user': update.message.from_user.username})
 
     keyboard = [
                     [
@@ -178,7 +177,7 @@ def poll(update, context):
     update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup, quote=False)
     try:
         update.message.delete()
-    except Exception:
+    except:
         logger.info(f'Could not delete message {update.message.message_id}')
 
     return POLL
@@ -199,7 +198,7 @@ def create_poll(update, context):
     previous_message = context.user_data['callback_message']
     try:
         context.bot.delete_message(chat_id, previous_message.message_id)
-    except Exception:
+    except:
         logger.info(f'Could not delete message {previous_message.message_id}')
     answer = context.user_data['answer']
     if chat_id in KEYS.get('groups', {chat_id}):
@@ -227,8 +226,16 @@ def create_poll(update, context):
                           allows_multiple_answers=False)
     try:
         update.message.delete()
-    except Exception:
+    except:
         logger.info(f'Could not delete message {update.message.message_id}')
+
+    if 'admin' in KEYS:
+        try:
+            author = context.user_data['user']
+            target = OPTIONS[context.user_data['answer']]
+            context.bot.send_message(KEYS['admin'], f'Poll started by @{author}\nThe answer is "{target}"')
+        except:
+            pass
 
     return ConversationHandler.END
 
