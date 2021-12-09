@@ -149,12 +149,11 @@ def increment_stats(updated_user, stats_file):
 def stats(update, context):
     stats = json.load(open('stats.json'))
     if not len(context.args):
-        computed_stats = {}
-        for user in OPTIONS:
-            computed_stats.update({user: stats.get(user, 0)})
         text = ''
-        for user, score in sorted(computed_stats.items(), key=lambda t: t[1], reverse=True):
+        for user, score in sorted(stats.items(), key=lambda t: t[1], reverse=True):
             text += (f'{OPTIONS[user]}: {score}\n')
+        if not text:
+            text += 'No stat available'
         update.message.reply_text(text, quote=False)
     else:    
         # cumbersome formatting
