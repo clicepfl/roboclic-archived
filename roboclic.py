@@ -176,7 +176,10 @@ def poll(update, context):
                 ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup, quote=False)
-    update.message.delete()
+    try:
+        update.message.delete()
+    except Exception:
+        logger.info(f'Could not delete message {update.message.message_id}')
 
     return POLL
 
@@ -194,7 +197,10 @@ def keyboard_handler(update, context):
 def create_poll(update, context):
     chat_id = update.message.chat.id
     previous_message = context.user_data['callback_message']
-    context.bot.delete_message(chat_id, previous_message.message_id)
+    try:
+        context.bot.delete_message(chat_id, previous_message.message_id)
+    except Exception:
+        logger.info(f'Could not delete message {previous_message.message_id}')
     answer = context.user_data['answer']
     if chat_id in set([KEYS['clic'], KEYS['clic_family']]):
         increment_stats(answer, 'stats.json')
@@ -219,7 +225,10 @@ def create_poll(update, context):
                           correct_option_id=answer_id,
                           is_anonymous=False,
                           allows_multiple_answers=False)
-    update.message.delete()
+    try:
+        update.message.delete()
+    except Exception:
+        logger.info(f'Could not delete message {update.message.message_id}')
 
     return ConversationHandler.END
 
