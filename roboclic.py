@@ -202,7 +202,7 @@ def create_poll(update, context):
     except Exception:
         logger.info(f'Could not delete message {previous_message.message_id}')
     answer = context.user_data['answer']
-    if chat_id in set([KEYS['clic'], KEYS['clic_family']]):
+    if chat_id in set([KEYS.get('clic', chat_id), KEYS.get('clic_family', chat_id)]):
         increment_stats(answer, 'stats.json')
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
