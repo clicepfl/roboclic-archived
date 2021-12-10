@@ -200,11 +200,15 @@ def create_poll(update, context):
         context.bot.delete_message(chat_id, previous_message.message_id)
     except:
         logger.info(f'Could not delete message {previous_message.message_id}')
+    
     answer = context.user_data['answer']
-    if chat_id in KEYS.get('groups', {chat_id}):
-        increment_stats(answer, 'stats.json')
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
+
+    try:
+        update.message.delete()
+    except:
+        logger.info(f'Could not delete message {update.message.message_id}')
 
     username = OPTIONS[answer]
     options = list(OPTIONS.values())
@@ -224,10 +228,9 @@ def create_poll(update, context):
                           correct_option_id=answer_id,
                           is_anonymous=False,
                           allows_multiple_answers=False)
-    try:
-        update.message.delete()
-    except:
-        logger.info(f'Could not delete message {update.message.message_id}')
+
+    if chat_id in KEYS.get('groups', {chat_id}):
+        increment_stats(answer, 'stats.json')
 
     if 'admin' in KEYS:
         try:
