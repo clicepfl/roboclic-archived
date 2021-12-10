@@ -141,7 +141,7 @@ def increment_stats(updated_user, stats_file):
     if not updated_user in OPTIONS:
         return
     stats = json.load(open(stats_file))
-    stats.update({updated_user: stats.get(updated_user, 0) + 1 })
+    stats.update({ updated_user: stats.get(updated_user, 0) + 1 })
     json.dump(stats, open(stats_file, 'w'))
 
 
@@ -210,16 +210,17 @@ def create_poll(update, context):
     except:
         logger.info(f'Could not delete message {update.message.message_id}')
 
-    username = OPTIONS[answer]
+    answer_name = OPTIONS[answer]
     options = list(OPTIONS.values())
     if len(OPTIONS) > LIMIT:
-        options.remove(username)
+        options.remove(answer_name)
         choices = random.sample(options, LIMIT - 1)
         answer_id = random.randint(0, LIMIT - 1)
-        choices.insert(answer_id, username)
+        choices.insert(answer_id, answer_name)
     else:
-        choices = random.sample(OPTIONS.values(), LIMIT)
-        answer_id = choices.index(username)
+        choices = OPTIONS.values()[:]
+        random.shuffle(choices)
+        answer_id = choices.index(answer_name)
 
     context.bot.send_poll(chat_id=update.effective_chat.id,
                           question=question,
