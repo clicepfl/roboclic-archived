@@ -288,7 +288,7 @@ def bureau(update, context):
     question = "Qui est au bureau ?"
     choices = [
             "Je suis actuellement au bureau", 
-            "Je suis autour du bureau",
+            "Je suis à proximité du bureau",
             "Je compte m'y rendre bientôt",
             "J'y suis pas"
             ]
