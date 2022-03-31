@@ -3,10 +3,10 @@ _Le bot Telegram de la [CLIC](https://clic.epfl.ch)_
 
 ### Requirements
 
-Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/python-telegram-bot) for Python. Namely
+Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/python-telegram-bot) for Python 3.8. Namely
 
 ```
-pip install python-telegram-bot
+pip install python-telegram-bot==3.14
 ```
 
 See the [Telegram Bot API documentation](https://core.telegram.org/bots) to obtain your bot token, to be stored in a ```.keys``` JSON file under ```{ "token": "YOUR_TOKEN" }```. Then simply launch the bot
