@@ -271,10 +271,10 @@ def birthday(update, context):
                           allows_multiple_answers=False)
 
 def telephone_du(reuf='reuf'):
-    return f"+41 76 399 46 20 le téléphone du {reuf} !"
+    return f"{KEYS.get('phone', '3630')} le téléphone du {reuf} !"
 
 def noel(update, context):
-    update.message.reply_text(telephone_du('père Noël'), quote=False)
+    update.message.reply_text(telephone_du('Père Noël'), quote=False)
 
 def reuf(update, context):
     update.message.reply_text(telephone_du(), quote=False)
