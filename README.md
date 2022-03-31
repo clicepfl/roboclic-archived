@@ -9,10 +9,14 @@ Install the right [Telegram API wrapper](https://github.com/python-telegram-bot/
 pip install python-telegram-bot
 ```
 
-See the [Telegram Bot API documentation](https://core.telegram.org/bots) to obtain your bot token, to be stored in a ```.keys``` file under ```token=YOUR_TOKEN```. Then simply launch the bot
+See the [Telegram Bot API documentation](https://core.telegram.org/bots) to obtain your bot token, to be stored in a ```.keys``` JSON file under ```{ "token: YOUR_TOKEN" }```. Then simply launch the bot
 ```
 python roboclic.py
 ```
+
+Please disable the bot's privacy mode before using it.
+
+Note that a few optional features require more parameters from the `.keys` file, namely `groups` (list of chat IDs), `phone` (string) and `admin` (chat ID).
 
 ### Features
 
