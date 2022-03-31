@@ -306,7 +306,7 @@ def help(update, context):
         update.message.reply_text(EXPLANATIONS.get(context.args[0], 'Not a command'))
     else:
         def display(commands):
-            return ['\n'.join('/' + command) for command in commands]
+            return '\n'.join(('/' + command) for command in commands)
         commands = display(NORMAL_COMMANDS.union(SPECIAL_COMMANDS))
         update.message.reply_text(
             "Available commands:\n{}\nUse help 'command_name' for more info"
