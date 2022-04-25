@@ -330,23 +330,23 @@ def help(update, context):
         )
 
 
-if __name__ == '__main__':
-    logger.info(f'Keys: {KEYS}')
-    updater = Updater(token=KEYS['token'], use_context=True)
-    dp = updater.dispatcher
 
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('poll', poll)],
-        states={POLL: [MessageHandler(filters=Filters.text, callback=create_poll)]},
-        fallbacks=[]
-    )
+logger.info(f'Keys: {KEYS}')
+updater = Updater(token=KEYS['token'], use_context=True)
+dp = updater.dispatcher
 
-    dp.add_handler(conv_handler)
-    dp.add_handler(CallbackQueryHandler(keyboard_handler))
-    dp.add_error_handler(error)
-    dp.add_handler(CommandHandler('help', help, pass_args=True))
+conv_handler = ConversationHandler(
+    entry_points=[CommandHandler('poll', poll)],
+    states={POLL: [MessageHandler(filters=Filters.text, callback=create_poll)]},
+    fallbacks=[]
+)
 
-    for fname in NORMAL_COMMANDS:
-        dp.add_handler(CommandHandler(fname, globals().get(fname)))
-    updater.start_polling()
-    updater.idle()
+dp.add_handler(conv_handler)
+dp.add_handler(CallbackQueryHandler(keyboard_handler))
+dp.add_error_handler(error)
+dp.add_handler(CommandHandler('help', help, pass_args=True))
+
+for fname in NORMAL_COMMANDS:
+    dp.add_handler(CommandHandler(fname, globals().get(fname)))
+updater.start_polling()
+updater.idle()
