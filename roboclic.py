@@ -12,6 +12,7 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 def open_utf8_r(filename, mode='r'):
     return open(filename, mode, encoding='utf-8')
 
+EMPTY = False
 LIMIT = 10
 POLL = 0
 JUL = 'jul.txt'
@@ -20,7 +21,7 @@ ARTHUR = 'arthur.txt'
 HELPER_TEXTS = "helper_texts.txt"
 NORMAL_COMMANDS = {
     'jul', 'hugo', 'reuf', 'noel', 'arthur', 'rayan',
-    'birthday', 'bureau', 'year', 'stats'
+    'birthday', 'bureau', 'year', 'stats', 'cafe'
 }
 SPECIAL_COMMANDS = {'poll', 'help'}
 
@@ -144,6 +145,21 @@ def increment_stats(updated_user, stats_file):
     stats.update({ updated_user: stats.get(updated_user, 0) + 1 })
     json.dump(stats, open(stats_file, 'w'))
 
+
+def cafe(update, context):
+    text = ''
+    if len(context.args) > 0:
+        if 'vide' in context.args:
+            EMPTY = True
+            text = "Il faut remplir le stock de café !!!"
+        elif 'plein' in context.args or 'rempli' in context.args:
+            EMPTY = False
+            text = "Le stock de café a été rempli !"
+    elif EMPTY:
+        text = "Il n'y a plus de café !!!"
+    elif not EMPTY:
+        text = "Pas de panique, il y a encore du café"
+    update.message.reply_text(text, quote=False)
 
 def stats(update, context):
     stats = json.load(open('stats.json'))
