@@ -12,8 +12,6 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 def open_utf8_r(filename, mode='r'):
     return open(filename, mode, encoding='utf-8')
 
-global EMPTY
-EMPTY = False
 LIMIT = 10
 POLL = 0
 JUL = 'jul.txt'
@@ -151,14 +149,14 @@ def cafe(update, context):
     text = ''
     if len(context.args) > 0:
         if 'vide' in context.args:
-            EMPTY = True
+            context.bot_data['empty'] = True
             text = "Il faut remplir le stock de café !!!"
         elif 'plein' in context.args or 'rempli' in context.args:
-            EMPTY = False
+            context.bot_data['empty'] = False
             text = "Le stock de café a été rempli !"
-    elif EMPTY:
+    elif context.bot_data.get('empty', False):
         text = "Il n'y a plus de café !!!"
-    elif not EMPTY:
+    else:
         text = "Pas de panique, il y a encore du café"
     update.message.reply_text(text, quote=False)
 
