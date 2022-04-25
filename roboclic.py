@@ -12,6 +12,7 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 def open_utf8_r(filename, mode='r'):
     return open(filename, mode, encoding='utf-8')
 
+global EMPTY
 EMPTY = False
 LIMIT = 10
 POLL = 0
