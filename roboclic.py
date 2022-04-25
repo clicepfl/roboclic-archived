@@ -148,7 +148,7 @@ def increment_stats(updated_user, stats_file):
 def cafe(update, context):
     text = ''
     if len(context.args) > 0:
-        if 'vide' in context.args:
+        if 'vide' in context.args or 'plus' in context.args:
             context.bot_data['empty'] = True
             text = "Il faut remplir le stock de café !!!"
         elif 'plein' in context.args or 'rempli' in context.args:
