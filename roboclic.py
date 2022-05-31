@@ -2,8 +2,11 @@ import logging
 import random
 import json
 import re
+from unittest import result
 import pytz
 from datetime import datetime
+from bs4 import BeautifulSoup
+import os
 
 from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, ConversationHandler, CallbackQueryHandler
@@ -143,6 +146,53 @@ def increment_stats(updated_user, stats_file):
     stats = json.load(open(stats_file))
     stats.update({ updated_user: stats.get(updated_user, 0) + 1 })
     json.dump(stats, open(stats_file, 'w'))
+
+def soup(update, context):
+
+    text = ""
+
+    os.system("sh script.sh {}".format(
+        datetime.datetime.today().strftime("%Y-%m-%d")))
+    f = open("menu.html", "r")
+    soup = BeautifulSoup(f, "html.parser")
+    menu = soup.find_all("tr", {"class": "menuPage"})
+    excluded = set(["La Ruch", "Microci", "Hodler"])
+
+    inputs = context.args.split(" ")
+    results=[]
+
+    if len(inputs)>1:
+        price_thrsh=float(inputs[0])
+    else:
+        price_thrsh=10
+
+    for item in menu:
+        price_list = [
+            float(price.text[2:-4]) 
+            if len(item.findAll("span", {"class": "price"})) > 1 
+            else 
+            float(price.text[:-3]) 
+            for price in item.findAll("span", {"class": "price"}) 
+            if "g" not in price.text and float(price.text[2:-4]) > 0]
+        if len(price_list):
+            if min(price_list) < price_thrsh:
+                resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[:7]
+                if resto not in excluded:
+                    results.append(
+                        "{} pour {} CHF : {}".format(
+                            resto,
+                            min(price_list),
+                            item
+                                .findAll("div", {"class": "descr"})[0]
+                                .findAll("b")[0]
+                                .text.replace("\n", " ")
+                    ))
+    if not len(results):
+        text="Pas de résultat correspondant aux filtres, c'est régime"
+
+    update.message.reply_text(text, quote=False)
+
+
 
 
 def cafe(update, context):
