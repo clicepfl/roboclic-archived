@@ -148,14 +148,21 @@ def increment_stats(updated_user, stats_file):
     json.dump(stats, open(stats_file, 'w'))
 
 def soup(update, context):
-
+    """
+    Uses bs4 and a curl script to scrape FLEP's daily menus and output all meals fitting the criterion.
+    As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
+    """    
     text = ""
 
+    #Fetches the daily menu
     os.system("sh script.sh {}".format(
-        datetime.datetime.today().strftime("%Y-%m-%d")))
+        datetime.datetime.today().strftime("%Y-%m-%d"))) 
     f = open("menu.html", "r")
+
     soup = BeautifulSoup(f, "html.parser")
     menu = soup.find_all("tr", {"class": "menuPage"})
+
+    #Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
 
     inputs = context.args.split(" ")
@@ -164,18 +171,18 @@ def soup(update, context):
     if len(inputs)>1:
         price_thrsh=float(inputs[0])
     else:
-        price_thrsh=10
+        price_thrsh=10 #Default budget is 10 CHF
 
     for item in menu:
         price_list = [
             float(price.text[2:-4]) 
-            if len(item.findAll("span", {"class": "price"})) > 1 
+            if len(item.findAll("span", {"class": "price"})) > 1 #Removes meals with prices=0 due to restaurateur not being honnetes and cheating the price filters 
             else 
-            float(price.text[:-3]) 
+            float(price.text[:-3]) #All prices are xx CHF, we only want xx
             for price in item.findAll("span", {"class": "price"}) 
-            if "g" not in price.text and float(price.text[2:-4]) > 0]
+            if "g" not in price.text and float(price.text[2:-4]) > 0] #removes prix au gramme prices as they're scam
         if len(price_list):
-            if min(price_list) < price_thrsh:
+            if min(price_list) <= price_thrsh: #Assuming the user is a student
                 resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[:7]
                 if resto not in excluded:
                     results.append(
@@ -183,7 +190,7 @@ def soup(update, context):
                             resto,
                             min(price_list),
                             item
-                                .findAll("div", {"class": "descr"})[0]
+                                .findAll("div", {"class": "descr"})[0]#desc is the description of the meal
                                 .findAll("b")[0]
                                 .text.replace("\n", " ")
                     ))
