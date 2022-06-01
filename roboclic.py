@@ -5,7 +5,7 @@ import re
 from unittest import result
 import pytz
 from datetime import datetime
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as bs
 import os
 
 from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
@@ -14,6 +14,7 @@ from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, Conve
 
 def open_utf8_r(filename, mode='r'):
     return open(filename, mode, encoding='utf-8')
+
 
 LIMIT = 10
 POLL = 0
@@ -41,6 +42,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Helper functions
+
+
 def quote(file):
     """
     Selects random line from file
@@ -111,7 +114,8 @@ def year(update, contact):
     percent = max(0, get_time(passed) / get_time(total) * 100)
     display = progression_bar(percent)
 
-    update.message.reply_text('{:.2f}%\n{}'.format(percent, display), quote=False)
+    update.message.reply_text(
+        '{:.2f}%\n{}'.format(percent, display), quote=False)
 
 
 def oss(update, context):
@@ -140,66 +144,70 @@ def jul(update, context):
                           is_anonymous=False,
                           allows_multiple_answers=False)
 
+
 def increment_stats(updated_user, stats_file):
     if not updated_user in OPTIONS:
         return
     stats = json.load(open(stats_file))
-    stats.update({ updated_user: stats.get(updated_user, 0) + 1 })
+    stats.update({updated_user: stats.get(updated_user, 0) + 1})
     json.dump(stats, open(stats_file, 'w'))
+
 
 def soup(update, context):
     """
     Uses bs4 and a curl script to scrape FLEP's daily menus and output all meals fitting the criterion.
     As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
-    """    
+    """
     text = ""
 
-    #Fetches the daily menu
+    # Fetches the daily menu
     os.system("sh script.sh {}".format(
-        datetime.datetime.today().strftime("%Y-%m-%d"))) 
+        datetime.datetime.today().strftime("%Y-%m-%d")))
     f = open("menu.html", "r")
 
-    soup = BeautifulSoup(f, "html.parser")
+    soup = bs(f, "html.parser")
     menu = soup.find_all("tr", {"class": "menuPage"})
 
-    #Removes non-Lausanne results
+    # Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
 
     inputs = context.args.split(" ")
-    results=[]
+    results = []
 
-    if len(inputs)>1:
-        price_thrsh=float(inputs[0])
+    if len(inputs) > 1:
+        price_thrsh = float(inputs[0])
     else:
-        price_thrsh=10 #Default budget is 10 CHF
+        price_thrsh = 10  # Default budget is 10 CHF
 
     for item in menu:
         price_list = [
-            float(price.text[2:-4]) 
-            if len(item.findAll("span", {"class": "price"})) > 1 #Removes meals with prices=0 due to restaurateur not being honnetes and cheating the price filters 
-            else 
-            float(price.text[:-3]) #All prices are xx CHF, we only want xx
-            for price in item.findAll("span", {"class": "price"}) 
-            if "g" not in price.text and float(price.text[2:-4]) > 0] #removes prix au gramme prices as they're scam
+            float(price.text[2:-4])
+            # Gne gneu Marahja doesn't know how to fill their menus in
+            if len(item.findAll("span", {"class": "price"})) > 1 or "E" in price.text
+            else
+            float(price.text[:-3])  # All prices are xx CHF, we only want xx
+            for price in item.findAll("span", {"class": "price"})
+            if "g" not in price.text and float(price.text[2:-4]) > 0]  # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
         if len(price_list):
-            if min(price_list) <= price_thrsh: #Assuming the user is a student
-                resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[:7]
+            if min(price_list) <= price_thrsh:  # Assuming the user is a student
+                resto = item.findAll("td", {"class": "restaurant"})[
+                    0].text.strip()[:7]
                 if resto not in excluded:
                     results.append(
                         "{} pour {} CHF : {}".format(
                             resto,
                             min(price_list),
                             item
-                                .findAll("div", {"class": "descr"})[0]#desc is the description of the meal
-                                .findAll("b")[0]
-                                .text.replace("\n", " ")
-                    ))
+                            # desc is the description of the meal
+                            .findAll("div", {"class": "descr"})[0]
+                            .findAll("b")[0]
+                            .text.replace("\n", " ")
+                        ))
     if not len(results):
-        text="Pas de résultat correspondant aux filtres, c'est régime"
-
+        text = "Pas de résultat correspondant aux filtres, c'est régime"
+    else :
+        text="\n".join(results)
     update.message.reply_text(text, quote=False)
-
-
 
 
 def cafe(update, context):
@@ -217,6 +225,7 @@ def cafe(update, context):
         text = "Pas de panique, il y a encore du café"
     update.message.reply_text(text, quote=False)
 
+
 def stats(update, context):
     stats = json.load(open('stats.json'))
     if not len(context.args):
@@ -226,9 +235,10 @@ def stats(update, context):
         if not text:
             text += 'No stat available'
         update.message.reply_text(text, quote=False)
-    else:    
+    else:
         # cumbersome formatting
-        query_user = context.args[0].lower().replace('é', 'e').replace('ï', 'i').replace('ë', 'e')
+        query_user = context.args[0].lower().replace(
+            'é', 'e').replace('ï', 'i').replace('ë', 'e')
         user = OPTIONS.get(query_user, query_user.title())
         score = stats.get(query_user, 0)
         update.message.reply_text(f'{user}: {score}', quote=False)
@@ -239,14 +249,15 @@ def poll(update, context):
     context.user_data.update({'user': update.message.from_user.username})
 
     keyboard = [
-                    [
-                        InlineKeyboardButton(option, callback_data=data)
-                        for data, option in list(OPTIONS.items())[4*row:4*(row+1)]
-                    ]
-                    for row in range(len(OPTIONS))
-                ]
+        [
+            InlineKeyboardButton(option, callback_data=data)
+            for data, option in list(OPTIONS.items())[4*row:4*(row+1)]
+        ]
+        for row in range(len(OPTIONS))
+    ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup, quote=False)
+    update.message.reply_text(
+        "Qui l'a dit ?", reply_markup=reply_markup, quote=False)
     try:
         update.message.delete()
     except:
@@ -272,7 +283,7 @@ def create_poll(update, context):
         context.bot.delete_message(chat_id, previous_message.message_id)
     except:
         logger.info(f'Could not delete message {previous_message.message_id}')
-    
+
     answer = context.user_data['answer']
     logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
     question = f'Qui a dit ça : "{update.message.text}"'
@@ -309,7 +320,8 @@ def create_poll(update, context):
         try:
             author = context.user_data['user']
             target = OPTIONS[context.user_data['answer']]
-            context.bot.send_message(KEYS['admin'], f'Poll started by @{author}\nThe answer is "{target}"')
+            context.bot.send_message(
+                KEYS['admin'], f'Poll started by @{author}\nThe answer is "{target}"')
         except:
             pass
 
@@ -342,11 +354,14 @@ def birthday(update, context):
                           is_anonymous=False,
                           allows_multiple_answers=False)
 
+
 def telephone_du(reuf='reuf'):
     return f"{KEYS.get('phone', '3630')} le téléphone du {reuf} !"
 
+
 def noel(update, context):
     update.message.reply_text(telephone_du('Père Noël'), quote=False)
+
 
 def reuf(update, context):
     update.message.reply_text(telephone_du(), quote=False)
@@ -359,12 +374,12 @@ def hugo(update, context):
 def bureau(update, context):
     question = "Qui est au bureau ?"
     choices = [
-            "Je suis actuellement au bureau", 
-            "Je suis à proximité du bureau",
-            "Je compte m'y rendre bientôt",
-            "J'y suis pas",
-            "Je suis pas en Suisse"
-            ]
+        "Je suis actuellement au bureau",
+        "Je suis à proximité du bureau",
+        "Je compte m'y rendre bientôt",
+        "J'y suis pas",
+        "Je suis pas en Suisse"
+    ]
     context.bot.send_poll(chat_id=update.effective_chat.id,
                           question=question,
                           options=choices,
@@ -375,7 +390,8 @@ def bureau(update, context):
 
 def help(update, context):
     if len(context.args) > 0:
-        update.message.reply_text(EXPLANATIONS.get(context.args[0], 'Not a command'))
+        update.message.reply_text(EXPLANATIONS.get(
+            context.args[0], 'Not a command'))
     else:
         def display(commands):
             return '\n'.join(('/' + command) for command in commands)
@@ -386,14 +402,14 @@ def help(update, context):
         )
 
 
-
 logger.info(f'Keys: {KEYS}')
 updater = Updater(token=KEYS['token'], use_context=True)
 dp = updater.dispatcher
 
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler('poll', poll)],
-    states={POLL: [MessageHandler(filters=Filters.text, callback=create_poll)]},
+    states={POLL: [MessageHandler(
+        filters=Filters.text, callback=create_poll)]},
     fallbacks=[]
 )
 
