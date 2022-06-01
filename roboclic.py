@@ -41,6 +41,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+REQUEST_TIMER = {
+    "launched":datetime.now()
+}
 # Helper functions
 
 
@@ -159,10 +162,10 @@ def soup(update, context):
     As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
     """
     text = ""
-
-    # Fetches the daily menu
-    os.system("sh script.sh {}".format(
-        datetime.datetime.today().strftime("%Y-%m-%d")))
+    if (datetime.now()-REQUEST_TIMER.get("soup", "1700-01-01T00:00:00Z GMT")).total_seconds()>=3600:
+        # Fetches the daily menu
+        os.system("sh script.sh {}".format(
+            datetime.datetime.today().strftime("%Y-%m-%d")))
     f = open("menu.html", "r")
 
     soup = bs(f, "html.parser")
