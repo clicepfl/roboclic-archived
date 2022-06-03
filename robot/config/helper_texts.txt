@@ -1,6 +1,3 @@
-qalf Countdown until qalf
-kaamelott Countdown until Kaamelott
-oss Countdown until OSS
 jul Test de culture classique
 hugo ???
 reuf reuf
