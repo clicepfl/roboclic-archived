@@ -35,6 +35,8 @@ if __name__ == "__main__":
     dp.add_handler(CommandHandler("rayan", rayan))
     dp.add_handler(CommandHandler("arthur", arthur))
     dp.add_handler(CommandHandler("hugo", hugo))
+    dp.add_handler(CommandHandler("noel", noel))
+    dp.add_handler(CommandHandler("reuf", reuf))
     dp.add_handler(CommandHandler("bureau", desk))
     dp.add_handler(CommandHandler("soup", soup))
     dp.add_handler(CommandHandler("year", year))
