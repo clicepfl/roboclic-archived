@@ -1,10 +1,8 @@
+from .. import open_utf8_r
+
 import json
 import logging
 from datetime import datetime
-
-
-def open_utf8_r(filename, mode="r"):
-    return open(filename, mode, encoding="utf-8")
 
 
 LIMIT = 10

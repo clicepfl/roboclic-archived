@@ -1,4 +1,5 @@
-from ..config import JUL, open_utf8_r
+from .. import open_utf8_r
+from ..config import JUL
 
 import random
 import re

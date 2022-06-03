@@ -1,4 +1,5 @@
-from ..config import open_utf8_r, KEYS, RAYAN, ARTHUR
+from .. import open_utf8_r
+from ..config import KEYS, RAYAN, ARTHUR
 
 import random
 
