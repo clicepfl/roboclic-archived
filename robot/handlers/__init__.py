@@ -1,6 +1,6 @@
 from .birthday import birthday
 from .coffee import coffee
-from .desk import desk
+from .bureau import bureau
 from .help import help
 from .jul import jul
 from .poll import poll_conv_handler, poll_keyboard_handler, stats

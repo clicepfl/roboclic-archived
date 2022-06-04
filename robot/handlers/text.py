@@ -2,9 +2,18 @@ from .. import open_utf8_r
 from ..config import KEYS, RAYAN, ARTHUR
 
 import random
+from typing import Any
 
 
-def quote(file):
+class SimpleText:
+    def __init__(self, message: str) -> str:
+        self.message = message
+    
+    def __call__(self, update: Any) -> None:
+        update.message.reply_text(self.message, quote=False)
+
+
+def _quote(file):
     """
     Selects random line from file
     """
@@ -12,25 +21,12 @@ def quote(file):
     return random.choice(quotes)
 
 
-def telephone_du(reuf="reuf"):
+def _telephone_du(reuf="reuf"):
     return f"{KEYS.get('phone', '3630')} le téléphone du {reuf} !"
 
 
-def noel(update, context):
-    update.message.reply_text(telephone_du("Père Noël"), quote=False)
-
-
-def reuf(update, context):
-    update.message.reply_text(telephone_du(), quote=False)
-
-
-def rayan(update, context):
-    update.message.reply_text(quote(RAYAN).capitalize(), quote=False)
-
-
-def arthur(update, context):
-    update.message.reply_text(quote(ARTHUR), quote=False)
-
-
-def hugo(update, context):
-    update.message.reply_text("???", quote=False)
+noel = SimpleText(_telephone_du("Père Noël"))
+reuf = SimpleText(_telephone_du)
+rayan = SimpleText(_quote(RAYAN).capitalize())
+arthur = SimpleText(_quote(ARTHUR))
+hugo = SimpleText("???")

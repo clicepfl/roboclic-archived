@@ -28,6 +28,7 @@ NORMAL_COMMANDS = {
     "year",
     "stats",
     "cafe",
+    "soup"
 }
 SPECIAL_COMMANDS = {"poll", "help"}
 

@@ -10,5 +10,5 @@ git stash
 git checkout master
 git pull
 
-pip3 install -r reqs.txt
+pip3 install -r requirements.txt
 systemctl restart roboclic

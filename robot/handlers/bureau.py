@@ -1,7 +1,7 @@
 from telegram import Poll
 
 
-def desk(update, context):
+def bureau(update, context):
     question = "Qui est au bureau ?"
     choices = [
         "Je suis actuellement au bureau",
