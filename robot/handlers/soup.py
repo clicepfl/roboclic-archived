@@ -19,12 +19,12 @@ def soup(update, context):
             f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}"
         )
         REQUEST_TIMER["soup"] = now
-        context.bot_data["soup_cache"] = {}
-    
-    with open(MENU, "r") as markup:
-        soup = bs(markup, "html.parser")
-    menu = soup.find_all("tr", {"class": "menuPage"})
+        with open(MENU, "r") as markup:
+            soup = bs(markup, "html.parser")
+            menu = soup.find_all("tr", {"class": "menuPage"})
+            context.bot_data["soup_cache"] = {"menu": menu}
 
+    menu = context.bot_data["soup_cache"]["menu"]
     # Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
 
@@ -37,7 +37,7 @@ def soup(update, context):
         price_thrsh = 10  # Default budget is 10 CHF
 
     if price_thrsh in context.bot_data["soup_cache"]:
-        text = context.bot_data["soup_cache"]
+        text = context.bot_data["soup_cache"][price_thrsh]
     else:
         for item in menu:
             price_list = [
@@ -67,5 +67,6 @@ def soup(update, context):
             text = "Pas de résultat correspondant aux filtres, c'est régime"
         else:
             text = "\n".join(results)
-        context.bot_data["soup_cache"].update({price_thrsh: text})
+        context.bot_data["soup_cache"][price_thrsh] = text
+    
     update.message.reply_text(text, quote=False)
