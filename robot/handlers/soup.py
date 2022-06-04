@@ -13,11 +13,12 @@ def soup(update, context):
     """
     text = ""
     now = datetime.now()
-    if "soup" not in REQUEST_TIMER or (now - REQUEST_TIMER["soup"]).total_seconds() >= 3600:
+    if (
+        "soup" not in REQUEST_TIMER
+        or (now - REQUEST_TIMER["soup"]).total_seconds() >= 3600
+    ):
         # Fetches the daily menu
-        os.system(
-            f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}"
-        )
+        os.system(f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}")
         REQUEST_TIMER["soup"] = now
         with open(MENU, "r") as markup:
             soup = bs(markup, "html.parser")
@@ -43,14 +44,17 @@ def soup(update, context):
             price_list = [
                 float(price.text[2:-4])
                 # Gne gneu Marahja doesn't know how to fill their menus in
-                if len(item.findAll("span", {"class": "price"})) > 1 or "E" in price.text
+                if len(item.findAll("span", {"class": "price"})) > 1
+                or "E" in price.text
                 else float(price.text[:-3])  # All prices are xx CHF, we only want xx
                 for price in item.findAll("span", {"class": "price"})
                 if "g" not in price.text and float(price.text[2:-4]) > 0
             ]  # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
             if len(price_list):
                 if min(price_list) <= price_thrsh:  # Assuming the user is a student
-                    resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[:7]
+                    resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
+                        :7
+                    ]
                     if resto not in excluded:
                         results.append(
                             "{} pour {} CHF : {}".format(
@@ -68,5 +72,5 @@ def soup(update, context):
         else:
             text = "\n".join(results)
         context.bot_data["soup_cache"][price_thrsh] = text
-    
+
     update.message.reply_text(text, quote=False)

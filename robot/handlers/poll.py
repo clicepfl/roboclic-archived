@@ -11,6 +11,7 @@ from telegram.ext import (
     ConversationHandler,
 )
 
+
 def poll(update, context):
     logger.info(f"Poll started by:\n{update}")
     context.user_data.update({"user": update.message.from_user.username})

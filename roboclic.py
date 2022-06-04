@@ -9,12 +9,12 @@ from telegram.ext import (
 
 
 if __name__ == "__main__":
+
     def error(update, context):
         """
         Error handler
         """
         logger.warning(f'Update "{update}" caused error "{context.error}"')
-
 
     logger.info(f"Keys: {KEYS}")
 

@@ -2,7 +2,7 @@ from ..config import EXPLANATIONS, NORMAL_COMMANDS, SPECIAL_COMMANDS
 
 
 def _display(commands):
-            return "\n".join(("/" + command) for command in commands)
+    return "\n".join(("/" + command) for command in commands)
 
 
 def help(update, context):
