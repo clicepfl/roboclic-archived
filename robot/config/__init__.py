@@ -14,6 +14,7 @@ ARTHUR = "robot/config/arthur.txt"
 HELPER_TEXTS = "robot/config/helper_texts.txt"
 STATS = "robot/config/stats.json"
 SOUP = "robot/config/soup.sh"
+MENU = "robot/config/menu.html"
 
 NORMAL_COMMANDS = {
     "jul",

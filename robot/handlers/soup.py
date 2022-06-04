@@ -1,4 +1,4 @@
-from ..config import REQUEST_TIMER, SOUP
+from ..config import REQUEST_TIMER, SOUP, MENU
 
 import os
 
@@ -12,22 +12,21 @@ def soup(update, context):
     As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
     """
     text = ""
-    if (
-        datetime.now() - REQUEST_TIMER.get("soup", "1700-01-01T00:00:00Z GMT")
-    ).total_seconds() >= 3600:
+    now = datetime.now()
+    if "soup" not in REQUEST_TIMER or (now - REQUEST_TIMER["soup"]).total_seconds() >= 3600:
         # Fetches the daily menu
         os.system(
-            f"sh {SOUP} {datetime.datetime.today().strftime('%Y-%m-%d')}"
+            f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}"
         )
-    f = open("menu.html", "r")
-
-    soup = bs(f, "html.parser")
+        REQUEST_TIMER["soup"] = now
+    with open(MENU, "r") as markup:
+        soup = bs(markup, "html.parser")
     menu = soup.find_all("tr", {"class": "menuPage"})
 
     # Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
 
-    inputs = context.args.split(" ")
+    inputs = context.args
     results = []
 
     if len(inputs) > 1:
