@@ -7,7 +7,7 @@ DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 cd $DIR
 
 git stash
-git checkout master
+git checkout main 
 git pull
 
 pip3 install -r requirements.txt
