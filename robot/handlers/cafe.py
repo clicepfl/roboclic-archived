@@ -1,4 +1,4 @@
-def coffee(update, context):
+def cafe(update, context):
     text = ""
     if len(context.args) > 0:
         if "vide" in context.args or "plus" in context.args:

@@ -1,5 +1,5 @@
 from .birthday import birthday
-from .coffee import coffee
+from .cafe import cafe
 from .bureau import bureau
 from .help import help
 from .jul import jul

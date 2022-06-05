@@ -1,4 +1,3 @@
-from setuptools import Command
 from robot.config import KEYS, NORMAL_COMMANDS, logger
 from robot.handlers import *
 
