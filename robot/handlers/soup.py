@@ -23,7 +23,7 @@ class Dish:
     
     
 def compute_text(list_dishes : List[Dish]) -> str:
-    """Given a list of Dish, compute the final text representation.
+    """Given a list of Dish, computes the final text representation.
 
     Parameters
     ----------
