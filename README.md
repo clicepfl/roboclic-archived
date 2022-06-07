@@ -6,7 +6,7 @@ _Le bot Telegram de la [CLIC](https://clic.epfl.ch)_
 Install dependencies [Telegram API wrapper](https://github.com/python-telegram-bot/python-telegram-bot) and BeautifulSoup 4
 
 ```
-pip install -r reqs.txt
+pip install -r requirements.txt
 ```
 
 See the [Telegram Bot API documentation](https://core.telegram.org/bots) to obtain your bot token, to be stored in a ```.keys``` JSON file under ```{ "token": "YOUR_TOKEN" }```. Then simply launch the bot
