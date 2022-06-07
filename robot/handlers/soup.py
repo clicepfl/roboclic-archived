@@ -1,13 +1,13 @@
+import os
 from dataclasses import dataclass
+from datetime import datetime
 from random import sample
 from typing import List
-from ..config import REQUEST_TIMER, SOUP, MENU
 
-import os
-
-from datetime import datetime
-from bs4 import BeautifulSoup as bs
 import telegram
+from bs4 import BeautifulSoup as bs
+
+from ..config import MENU, REQUEST_TIMER, SOUP
 
 EMOJIS_FOOD = ["🥕","🥔","🍞","🍔","🍟","🍕","🥘",
 			"🍳","🥚","🫔","🌯","🌮","🥪","🌭","🍲","🍖","🍗","🥩"]
@@ -40,7 +40,7 @@ def compute_text(list_dishes : List[Dish]) -> str:
          
 {text_dishes}"""
     header = "{}{}<b>On mange quoi ?</b> {}{}".format(*sample(EMOJIS_FOOD, 4))
-    return TEMPLATE_TEXT.format(header=header, text_dishes="\n".join([str(p) for p in list_dishes]))
+    return TEMPLATE_TEXT.format(header=header, text_dishes="\n".join(str(p) for p in list_dishes))
 
 def soup(update, context):
     """
