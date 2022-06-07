@@ -62,7 +62,7 @@ def soup(update, context):
             context.bot_data["soup_cache"] = {"menu": menu}
 
     menu = context.bot_data["soup_cache"]["menu"]
-    # Removes non-Lausanne resultsMARKDOWN_V2
+    # Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
 
     inputs = context.args
