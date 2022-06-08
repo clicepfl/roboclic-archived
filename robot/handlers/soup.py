@@ -1,9 +1,67 @@
-from ..config import REQUEST_TIMER, SOUP, MENU
-
 import os
-
+from dataclasses import dataclass
 from datetime import datetime
+from random import sample
+from typing import List
+
+import telegram
 from bs4 import BeautifulSoup as bs
+
+from ..config import MENU, REQUEST_TIMER, SOUP
+
+EMOJIS_FOOD = [
+    "🥕",
+    "🥔",
+    "🍞",
+    "🍔",
+    "🍟",
+    "🍕",
+    "🥘",
+    "🍳",
+    "🥚",
+    "🫔",
+    "🌯",
+    "🌮",
+    "🥪",
+    "🌭",
+    "🍲",
+    "🍖",
+    "🍗",
+    "🥩",
+]
+
+
+@dataclass
+class Dish:
+    price_list: List[float]
+    name_resto: str
+    dish_name: str
+
+    def __str__(self):
+        return f"🍽️<b> {min(self.price_list)} CHF</b> - <i>{self.name_resto}</i> → {self.dish_name}."
+
+
+def compute_text(list_dishes: List[Dish]) -> str:
+    """Given a list of Dish, computes the final text representation.
+
+    Parameters
+    ----------
+    list_plat : List[Dish]
+        The list of dishes.
+
+    Returns
+    -------
+    str
+        The final text representation of the command.
+    """
+    TEMPLATE_TEXT = """
+     {header}
+         
+{text_dishes}"""
+    header = "{}{}<b>On mange quoi ?</b> {}{}".format(*sample(EMOJIS_FOOD, 4))
+    return TEMPLATE_TEXT.format(
+        header=header, text_dishes="\n".join(str(p) for p in list_dishes)
+    )
 
 
 def soup(update, context):
@@ -30,7 +88,7 @@ def soup(update, context):
     excluded = set(["La Ruch", "Microci", "Hodler"])
 
     inputs = context.args
-    results = []
+    results: List[Dish] = []
 
     if len(inputs) > 1:
         price_thrsh = float(inputs[0])
@@ -56,21 +114,19 @@ def soup(update, context):
                         :7
                     ]
                     if resto not in excluded:
-                        results.append(
-                            "{} pour {} CHF : {}".format(
-                                resto,
-                                min(price_list),
-                                item
-                                # desc is the description of the meal
-                                .findAll("div", {"class": "descr"})[0]
-                                .findAll("b")[0]
-                                .text.replace("\n", " "),
-                            )
+                        dish_name = (
+                            item.findAll("div", {"class": "descr"})[0]
+                            .findAll("b")[0]
+                            .text.replace("\n", " ")
                         )
+                        results.append(Dish(price_list, resto, dish_name))
+
         if not len(results):
             text = "Pas de résultat correspondant aux filtres, c'est régime"
         else:
-            text = "\n".join(results)
+            text = compute_text(results)
         context.bot_data["soup_cache"][price_thrsh] = text
 
-    update.message.reply_text(text, quote=False)
+    update.message.reply_text(
+        text, quote=False, parse_mode=telegram.constants.PARSEMODE_HTML
+    )
