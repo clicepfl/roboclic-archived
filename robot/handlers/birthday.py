@@ -1,8 +1,8 @@
-from ..config import OPTIONS, BIRTHDAYS, LIMIT
-
 import random
 
 from telegram import Poll
+
+from ..config import BIRTHDAYS, LIMIT, OPTIONS
 
 
 def birthday(update, context):

@@ -1,8 +1,9 @@
 import os
+from copy import copy
 from dataclasses import dataclass
 from datetime import datetime
 from random import sample
-from typing import List
+from typing import Callable, Generator, Iterable, Iterator, List
 
 import telegram
 from bs4 import BeautifulSoup as bs
@@ -35,35 +36,67 @@ EMPTY_REPLY = "Pas de résultat correspondant aux filtres, c'est régime"
 
 @dataclass
 class Dish:
-    price_list: List[float]
+    prices: List[float]
     name_resto: str
     dish_name: str
+    vegetarian: bool
 
     def __str__(self):
-        return f"🍽️<b> {min(self.price_list)} CHF</b> - <i>{self.name_resto}</i> → {self.dish_name}."
+        return f"🍽️<b> {min(self.prices)} CHF</b> - <i>{self.name_resto}</i> → {self.dish_name}."
 
 
-def _pretty_soup_text(list_dishes: List[Dish]) -> str:
-    """Given a list of Dish, computes the final text representation.
+@dataclass
+class Menu:
+    dishes: Iterable[Dish]
+    filters: List[Callable[[Dish], bool]]
 
-    Parameters
-    ----------
-    list_plat : List[Dish]
-        The list of dishes.
+    def __init__(self, dishes: Iterable[Dish]):
+        self.dishes = dishes
 
-    Returns
-    -------
-    str
-        The final text representation of the command.
-    """
-    TEMPLATE_TEXT = """
-     {header}
-         
-{text_dishes}"""
-    header = "{}{}<b>On mange quoi ?</b> {}{}".format(*sample(EMOJIS_FOOD, 4))
-    return TEMPLATE_TEXT.format(
-        header=header, text_dishes="\n".join(str(p) for p in list_dishes)
-    )
+    def __str__(self):
+        header = "{}{}<b>On mange quoi ?</b> {}{}".format(*sample(EMOJIS_FOOD, 4))
+        return "{}\n\n{}".format(header, "\n".join(str(p) for p in self.dishes))
+
+    def add_filter(self, filter0: Callable[[Dish], bool]):
+        self.filters.append(filter0)
+
+    def apply_filters(self):
+        self.dishes = (
+            dish
+            for dish in self.dishes
+            if all(filter0(dish) for filter0 in self.filters)
+        )
+
+    @staticmethod
+    def from_html(html):
+        # removes non-Lausanne results
+        excluded = set(["La Ruch", "Microci", "Hodler"])
+        # handle edge case names
+        alias = {"La Tabl": "Vallotton", "Maharaj": "Maharaja"}
+
+        soup = bs(html, "html.parser")
+        content = soup.find_all("tr", {"class": "menuPage"})
+        dishes = []
+        for item in content:
+            prices = []
+            for price in item.findAll("span", {"class": "price"}):
+                # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
+                if "g" not in price and float(price.text[2:-4]) > 0:
+                    if len(price) > 1 or "E" in price.text:
+                        prices.append(float(price.text[2:-4]))
+                    else:
+                        prices.append(float(price.text[:-3]))
+            if len(prices):
+                resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
+                    :7  # very future proof solution
+                ]
+                resto = alias.get(resto, resto)
+                if resto not in excluded:
+                    descr = item.findAll("div", {"class": "descr"})[0]
+                    dish_name = descr.findAll("b")[0].text.replace("\n", " ")
+                    vegetarian = "végétarien" in descr
+                    dishes.append(Dish(prices, resto, dish_name, vegetarian))
+        return Menu(dishes)
 
 
 def soup(update, context):
@@ -80,17 +113,13 @@ def soup(update, context):
         os.system(f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}")
         REQUEST_TIMER["soup"] = now
         with open(MENU, "r") as markup:
-            soup = bs(markup, "html.parser")
-            menu = soup.find_all("tr", {"class": "menuPage"})
-            context.bot_data["soup_cache"] = {"menu": menu}
+            menu = Menu.from_html(markup)
+            soup_cache = context.bot_data["soup_cache"]
+            soup_cache.update({"menu": menu, "budgets": {}})
 
-    menu = context.bot_data["soup_cache"]["menu"]
-    # Removes non-Lausanne results
-    excluded = set(["La Ruch", "Microci", "Hodler"])
-    alias = {"La Tabl":"Vallotton", "Maharaj":"Maharaja"}
+    menu = copy(soup_cache["menu"])
 
     inputs = context.args
-    results: List[Dish] = []
 
     # arg parsing
     budget = None
@@ -99,43 +128,32 @@ def soup(update, context):
         for arg in inputs:
             if type(arg) in {int, float} and budget is None:
                 budget = arg
-            elif type(arg) == str and arg.lower().replace('é', 'e') in VEGETARIAN_WORDS and vegetarian is None:
+            elif (
+                type(arg) == str
+                and arg.lower().replace("é", "e") in VEGETARIAN_WORDS
+                and vegetarian is None
+            ):
                 vegetarian = True
     if budget is None:
         budget = 10
     if vegetarian is None:
         vegetarian = False
 
-    if budget not in context.bot_data["soup_cache"]:
-        for item in menu:
-            price_list = [
-                float(price.text[2:-4])
-                # Gne gneu Marahja doesn't know how to fill their menus in
-                if len(item.findAll("span", {"class": "price"})) > 1
-                or "E" in price.text
-                else float(price.text[:-3])  # All prices are xx CHF, we only want xx
-                for price in item.findAll("span", {"class": "price"})
-                if "g" not in price.text and float(price.text[2:-4]) > 0
-            ] # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
-            if len(price_list):
-                if min(price_list) <= budget:  # Assuming the user is a student
-                    resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
-                        :7 # very future proof solution
-                    ]
-                    resto = alias.get(resto, resto)
-                    if resto not in excluded:
-                        descr = item.findAll("div", {"class": "descr"})[0]
-                        dish_name = (
-                            descr
-                            .findAll("b")[0]
-                            .text.replace("\n", " ")
-                        )
-                        if not vegetarian or "végétarien" in str(descr).lower():
-                            results.append(Dish(price_list, resto, dish_name))
+    budget_key = lambda v: "vegetarian" if v else "omnivore"
 
-        text = _pretty_soup_text(results) if len(results) else EMPTY_REPLY
-        context.bot_data["soup_cache"][budget] = text
+    if budget not in soup_cache["budgets"]:
+        menu.add_filter(lambda d: min(d.prices) <= budget)
+        if vegetarian:
+            menu.add_filter(lambda d: d.vegetarian)
+        menu.apply_filters()
+        soup_cache["budgets"].update({budget: {budget_key: str(menu)}})
+    elif vegetarian and "vegetarian" not in soup_cache["budgets"][budget]:
+        menu.add_filter(lambda d: d.vegetarian)
+        menu.apply_filters()
+        soup_cache["budgets"][budget].update({"vegetarian": str(menu)})
 
     update.message.reply_text(
-        context.bot_data["soup_cache"][budget], quote=False, parse_mode=telegram.constants.PARSEMODE_HTML
+        soup_cache["budgets"][budget][budget_key],
+        quote=False,
+        parse_mode=telegram.constants.PARSEMODE_HTML,
     )

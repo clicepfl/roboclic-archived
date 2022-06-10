@@ -1,10 +1,10 @@
-from .. import open_utf8_r
-from ..config import JUL
-
 import random
 import re
 
 from telegram import Poll
+
+from .. import open_utf8_r
+from ..config import JUL
 
 
 def jul(update, context):

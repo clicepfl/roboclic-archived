@@ -1,9 +1,8 @@
-from .. import open_utf8_r
-
 import json
 import logging
 from datetime import datetime
 
+from .. import open_utf8_r
 
 LIMIT = 10
 POLL = 0
