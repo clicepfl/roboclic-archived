@@ -126,7 +126,7 @@ def soup(update, context):
     if len(inputs):
         for arg in inputs:
             if type(arg) in {int, float} and budget is None:
-                budget = arg
+                budget = float(arg)
             elif (
                 type(arg) == str
                 and arg.lower().replace("é", "e") in VEGETARIAN_WORDS
