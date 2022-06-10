@@ -3,7 +3,7 @@ from copy import copy
 from dataclasses import dataclass
 from datetime import datetime
 from random import sample
-from typing import Callable, Generator, Iterable, Iterator, List
+from typing import Callable, Iterable, List
 
 import telegram
 from bs4 import BeautifulSoup as bs
@@ -45,7 +45,6 @@ class Dish:
         return f"🍽️<b> {min(self.prices)} CHF</b> - <i>{self.name_resto}</i> → {self.dish_name}."
 
 
-@dataclass
 class Menu:
     dishes: Iterable[Dish]
     filters: List[Callable[[Dish], bool]]
