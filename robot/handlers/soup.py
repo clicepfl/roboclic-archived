@@ -92,14 +92,9 @@ def soup(update, context):
     inputs = context.args
     results: List[Dish] = []
 
-    if len(inputs) > 0:
-        price_thrsh = float(inputs[0])
-    else:
-        price_thrsh = 10  # Default budget is 10 CHF
+    price_thrsh = float(inputs[0]) if len(inputs) else 10
 
-    if price_thrsh in context.bot_data["soup_cache"]:
-        text = context.bot_data["soup_cache"][price_thrsh]
-    else:
+    if price_thrsh not in context.bot_data["soup_cache"]:
         for item in menu:
             price_list = [
                 float(price.text[2:-4])
@@ -109,7 +104,7 @@ def soup(update, context):
                 else float(price.text[:-3])  # All prices are xx CHF, we only want xx
                 for price in item.findAll("span", {"class": "price"})
                 if "g" not in price.text and float(price.text[2:-4]) > 0
-            ]  # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
+            ] # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
             if len(price_list):
                 if min(price_list) <= price_thrsh:  # Assuming the user is a student
                     resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
@@ -131,5 +126,5 @@ def soup(update, context):
         context.bot_data["soup_cache"][price_thrsh] = text
 
     update.message.reply_text(
-        text, quote=False, parse_mode=telegram.constants.PARSEMODE_HTML
+        context.bot_data["soup_cache"], quote=False, parse_mode=telegram.constants.PARSEMODE_HTML
     )

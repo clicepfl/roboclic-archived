@@ -1,6 +1,6 @@
 def cafe(update, context):
     text = ""
-    if len(context.args) > 0:
+    if len(context.args):
         if "vide" in context.args or "plus" in context.args:
             context.bot_data["empty"] = True
             text = "Il faut remplir le stock de café !!!"
