@@ -29,6 +29,8 @@ EMOJIS_FOOD = [
     "🍗",
     "🥩",
 ]
+VEGETARIAN_WORDS = {"veg", "vege", "vegetarien", "vegetarian"}
+EMPTY_REPLY = "Pas de résultat correspondant aux filtres, c'est régime"
 
 
 @dataclass
@@ -41,7 +43,7 @@ class Dish:
         return f"🍽️<b> {min(self.price_list)} CHF</b> - <i>{self.name_resto}</i> → {self.dish_name}."
 
 
-def compute_text(list_dishes: List[Dish]) -> str:
+def _pretty_soup_text(list_dishes: List[Dish]) -> str:
     """Given a list of Dish, computes the final text representation.
 
     Parameters
@@ -69,7 +71,6 @@ def soup(update, context):
     Uses bs4 and a curl script to scrape FLEP's daily menus and output all meals fitting the criterion.
     As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
     """
-    text = ""
     now = datetime.now()
     if (
         "soup" not in REQUEST_TIMER
@@ -87,23 +88,25 @@ def soup(update, context):
     # Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
     alias = {"La Tabl":"Vallotton", "Maharaj":"Maharaja"}
-    veg_kws = ["vég", "veg"]
-
-    vegetarian = False
 
     inputs = context.args
     results: List[Dish] = []
 
-    if len(input) > 1 and any(veg_kw in str(input[1]) for veg_kw in veg_kws) :
-        vegetarian = True
-    if len(inputs) > 0:
-        price_thrsh = float(inputs[0])
-    else:
-        price_thrsh = 10  # Default budget is 10 CHF
+    # arg parsing
+    budget = None
+    vegetarian = None
+    if len(inputs):
+        for arg in inputs:
+            if type(arg) in {int, float} and budget is None:
+                budget = arg
+            elif type(arg) == str and arg.lower().replace('é', 'e') in VEGETARIAN_WORDS and vegetarian is None:
+                vegetarian = True
+    if budget is None:
+        budget = 10
+    if vegetarian is None:
+        vegetarian = False
 
-    if price_thrsh in context.bot_data["soup_cache"]:
-        text = context.bot_data["soup_cache"][price_thrsh]
-    else:
+    if budget not in context.bot_data["soup_cache"]:
         for item in menu:
             price_list = [
                 float(price.text[2:-4])
@@ -115,9 +118,9 @@ def soup(update, context):
                 if "g" not in price.text and float(price.text[2:-4]) > 0
             ] # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
             if len(price_list):
-                if min(price_list) <= price_thrsh:  # Assuming the user is a student
+                if min(price_list) <= budget:  # Assuming the user is a student
                     resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
-                        :7 #Very future proof solution
+                        :7 # very future proof solution
                     ]
                     resto = alias.get(resto, resto)
                     if resto not in excluded:
@@ -127,15 +130,12 @@ def soup(update, context):
                             .findAll("b")[0]
                             .text.replace("\n", " ")
                         )
-                        if not vegetarian or "végétarien" in str(descr):
+                        if not vegetarian or "végétarien" in str(descr).lower():
                             results.append(Dish(price_list, resto, dish_name))
 
-        if not len(results):
-            text = "Pas de résultat correspondant aux filtres, c'est régime"
-        else:
-            text = compute_text(results)
-        context.bot_data["soup_cache"][price_thrsh] = text
+        text = _pretty_soup_text(results) if len(results) else EMPTY_REPLY
+        context.bot_data["soup_cache"][budget] = text
 
     update.message.reply_text(
-        context.bot_data["soup_cache"], quote=False, parse_mode=telegram.constants.PARSEMODE_HTML
+        context.bot_data["soup_cache"][budget], quote=False, parse_mode=telegram.constants.PARSEMODE_HTML
     )
