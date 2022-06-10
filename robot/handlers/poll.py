@@ -1,15 +1,11 @@
-from ..config import *
-
-import random
 import json
+import random
 
-from telegram import Poll, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Filters,
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
-)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Poll
+from telegram.ext import (CommandHandler, ConversationHandler, Filters,
+                          MessageHandler)
+
+from ..config import *
 
 
 def poll(update, context):

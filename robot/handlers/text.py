@@ -1,7 +1,7 @@
-from .. import open_utf8_r
-from ..config import KEYS, RAYAN, ARTHUR
-
 import random
+
+from .. import open_utf8_r
+from ..config import ARTHUR, KEYS, RAYAN
 
 
 def _quote(file):
