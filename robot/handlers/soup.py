@@ -86,15 +86,24 @@ def soup(update, context):
     menu = context.bot_data["soup_cache"]["menu"]
     # Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
-
     alias = {"La Tabl":"Vallotton", "Maharaj":"Maharaja"}
+    veg_kws = ["vég", "veg"]
+
+    vegetarian = False
 
     inputs = context.args
     results: List[Dish] = []
 
-    price_thrsh = float(inputs[0]) if len(inputs) else 10
+    if len(input) > 1 and any(veg_kw in str(input[1]) for veg_kw in veg_kws) :
+        vegetarian = True
+    if len(inputs) > 0:
+        price_thrsh = float(inputs[0])
+    else:
+        price_thrsh = 10  # Default budget is 10 CHF
 
-    if price_thrsh not in context.bot_data["soup_cache"]:
+    if price_thrsh in context.bot_data["soup_cache"]:
+        text = context.bot_data["soup_cache"][price_thrsh]
+    else:
         for item in menu:
             price_list = [
                 float(price.text[2:-4])
@@ -112,12 +121,14 @@ def soup(update, context):
                     ]
                     resto = alias.get(resto, resto)
                     if resto not in excluded:
+                        descr = item.findAll("div", {"class": "descr"})[0]
                         dish_name = (
-                            item.findAll("div", {"class": "descr"})[0]
+                            descr
                             .findAll("b")[0]
                             .text.replace("\n", " ")
                         )
-                        results.append(Dish(price_list, resto, dish_name))
+                        if not vegetarian or "végétarien" in str(descr):
+                            results.append(Dish(price_list, resto, dish_name))
 
         if not len(results):
             text = "Pas de résultat correspondant aux filtres, c'est régime"
