@@ -87,10 +87,12 @@ def soup(update, context):
     # Removes non-Lausanne results
     excluded = set(["La Ruch", "Microci", "Hodler"])
 
+    alias = {"La Tabl":"Vallotton", "Maharaj":"Maharaja"}
+
     inputs = context.args
     results: List[Dish] = []
 
-    if len(inputs) > 1:
+    if len(inputs) >= 1:
         price_thrsh = float(inputs[0])
     else:
         price_thrsh = 10  # Default budget is 10 CHF
@@ -111,8 +113,9 @@ def soup(update, context):
             if len(price_list):
                 if min(price_list) <= price_thrsh:  # Assuming the user is a student
                     resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
-                        :7
+                        :7 #Very future proof solution
                     ]
+                    resto = alias.get(resto, resto)
                     if resto not in excluded:
                         dish_name = (
                             item.findAll("div", {"class": "descr"})[0]
