@@ -2,8 +2,7 @@ import json
 import random
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Poll
-from telegram.ext import (CommandHandler, ConversationHandler, Filters,
-                          MessageHandler)
+from telegram.ext import CommandHandler, ConversationHandler, Filters, MessageHandler
 
 from ..config import *
 

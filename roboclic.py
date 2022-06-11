@@ -1,12 +1,7 @@
+from telegram.ext import CallbackQueryHandler, CommandHandler, Updater
+
 from robot.config import KEYS, NORMAL_COMMANDS, logger
 from robot.handlers import *
-
-from telegram.ext import (
-    Updater,
-    CommandHandler,
-    CallbackQueryHandler,
-)
-
 
 if __name__ == "__main__":
 

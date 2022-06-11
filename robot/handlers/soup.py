@@ -1,9 +1,8 @@
 import os
-from copy import copy
 from dataclasses import dataclass
 from datetime import datetime
 from random import sample
-from typing import Callable, Iterable, List
+from typing import Any, Callable, Iterable, List
 
 import telegram
 from bs4 import BeautifulSoup as bs
@@ -31,7 +30,6 @@ EMOJIS_FOOD = [
     "🥩",
 ]
 VEGETARIAN_WORDS = {"veg", "vege", "vegetarien", "vegetarian"}
-EMPTY_REPLY = "Pas de résultat correspondant aux filtres, c'est régime"
 
 
 @dataclass
@@ -51,16 +49,27 @@ class Menu:
 
     def __init__(self, dishes: Iterable[Dish]):
         self.dishes = dishes
+        self.filters = []
 
     def __str__(self):
-        header = "{}{}<b>On mange quoi ?</b> {}{}".format(*sample(EMOJIS_FOOD, 4))
-        return "{}\n\n{}".format(header, "\n".join(str(p) for p in self.dishes))
+        content = "\n".join(str(p) for p in self.dishes)
+        if content:
+            header = "{}{} <b>On mange quoi ?</b> {}{}".format(*sample(EMOJIS_FOOD, 4))
+            return "{}\n\n{}".format(header, content)
+        else:
+            return "Pas de résultat correspondant aux filtres, c'est régime"
 
     def add_filter(self, filter0: Callable[[Dish], bool]):
         self.filters.append(filter0)
 
-    def apply_filters(self):
-        self.dishes = (
+    def vegetarian(self):
+        self.add_filter(lambda d: d.vegetarian)
+
+    def budget(self, budget):
+        self.add_filter(lambda d: min(d.prices) <= budget)
+
+    def filter(self):
+        return Menu(
             dish
             for dish in self.dishes
             if all(filter0(dish) for filter0 in self.filters)
@@ -113,42 +122,45 @@ def soup(update, context):
         REQUEST_TIMER["soup"] = now
         with open(MENU, "r") as markup:
             menu = Menu.from_html(markup)
-            soup_cache = context.bot_data["soup_cache"]
-            soup_cache.update({"menu": menu, "budgets": {}})
+            context.bot_data["soup_cache"] = {"menu": menu, "budgets": {}}
 
-    menu = copy(soup_cache["menu"])
-
-    inputs = context.args
+    soup_cache = context.bot_data["soup_cache"]
+    menu: Menu = soup_cache["menu"]
+    inputs: List[Any] = context.args
 
     # arg parsing
     budget = None
     vegetarian = None
     if len(inputs):
         for arg in inputs:
-            if type(arg) in {int, float} and budget is None:
-                budget = float(arg)
-            elif (
-                type(arg) == str
-                and arg.lower().replace("é", "e") in VEGETARIAN_WORDS
-                and vegetarian is None
-            ):
+            if budget is None:
+                try:
+                    budget = float(arg)
+                    continue
+                except:
+                    pass
+            if vegetarian is None and arg.lower().replace("é", "e") in VEGETARIAN_WORDS:
                 vegetarian = True
     if budget is None:
-        budget = 10
+        budget = 10.0
     if vegetarian is None:
         vegetarian = False
 
-    budget_key = lambda v: "vegetarian" if v else "omnivore"
+    budget_key = "vegetarian" if vegetarian else "omnivore"
 
     if budget not in soup_cache["budgets"]:
-        menu.add_filter(lambda d: min(d.prices) <= budget)
+        menu.budget(budget)
         if vegetarian:
-            menu.add_filter(lambda d: d.vegetarian)
-        menu.apply_filters()
-        soup_cache["budgets"].update({budget: {budget_key: str(menu)}})
+            menu.vegetarian()
+        menu = menu.filter()
+        print("Not seen this budget before!")
+        print(budget, budget_key)
+        soup_cache["budgets"][budget] = {budget_key: str(menu)}
     elif vegetarian and "vegetarian" not in soup_cache["budgets"][budget]:
-        menu.add_filter(lambda d: d.vegetarian)
-        menu.apply_filters()
+        menu.vegetarian()
+        menu = menu.filter()
+        print("I've seen this budget, but it wasn't vegetarian!")
+        print(budget, budget_key)
         soup_cache["budgets"][budget].update({"vegetarian": str(menu)})
 
     update.message.reply_text(
