@@ -8,6 +8,7 @@ import telegram
 from bs4 import BeautifulSoup as bs
 
 from ..config import MENU, REQUEST_TIMER, SOUP
+from ..config import logger
 
 EMOJIS_FOOD = [
     "🥕",
@@ -153,14 +154,14 @@ def soup(update, context):
         if vegetarian:
             menu.vegetarian()
         menu = menu.filter()
-        print("Not seen this budget before!")
-        print(budget, budget_key)
+        logger.info("Not seen this budget before!")
+        logger.info(budget, budget_key)
         soup_cache["budgets"][budget] = {budget_key: str(menu)}
     elif vegetarian and "vegetarian" not in soup_cache["budgets"][budget]:
         menu.vegetarian()
         menu = menu.filter()
-        print("I've seen this budget, but it wasn't vegetarian!")
-        print(budget, budget_key)
+        logger.info("I've seen this budget, but it wasn't vegetarian!")
+        logger.info(budget, budget_key)
         soup_cache["budgets"][budget].update({"vegetarian": str(menu)})
 
     update.message.reply_text(
