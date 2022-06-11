@@ -70,11 +70,13 @@ class Menu:
         self.add_filter(lambda d: min(d.prices) <= budget)
 
     def filter(self):
-        return Menu(
+        r = Menu(
             dish
             for dish in self.dishes
             if all(filter0(dish) for filter0 in self.filters)
         )
+        self.filters = []
+        return r
 
     @staticmethod
     def from_html(html):
