@@ -133,10 +133,10 @@ def soup(update, context):
     budget = None
     vegetarian = None
     if len(inputs):
-        for arg in inputs:
+        for arg in inputs[:2]:
             if budget is None:
                 try:
-                    budget = float(arg)
+                    budget = max(5.0, min(40.0, round(float(arg), 1)))
                     continue
                 except:
                     pass
