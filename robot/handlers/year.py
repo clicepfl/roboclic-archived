@@ -16,7 +16,7 @@ def progression_bar(percent):
     """
     total = 25
     tiles = min(total, int(round(percent / 4)))
-    return "[" + "#" * tiles + "-" * (total - tiles) * 2 + "]"
+    return "[" + "#" * tiles + "_" * (total - tiles) + "]"
 
 
 def year(update, contact):
