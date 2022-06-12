@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from random import sample
@@ -125,7 +126,7 @@ def soup(update, context):
             context.bot_data["soup_cache"] = {"menu": menu, "budgets": {}}
 
     soup_cache = context.bot_data["soup_cache"]
-    menu: Menu = soup_cache["menu"]
+    menu: Menu = deepcopy(soup_cache["menu"])
     inputs: List[Any] = context.args
 
     # arg parsing
