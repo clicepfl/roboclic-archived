@@ -7,8 +7,7 @@ from typing import Any, Callable, Iterable, List
 import telegram
 from bs4 import BeautifulSoup as bs
 
-from ..config import MENU, REQUEST_TIMER, SOUP
-from ..config import logger
+from ..config import MENU, REQUEST_TIMER, SOUP, logger
 
 EMOJIS_FOOD = [
     "🥕",
@@ -162,7 +161,9 @@ def soup(update, context):
         menu = menu.filter()
         soup_cache["budgets"][budget].update({"vegetarian": str(menu)})
 
-    logger.info(f"user #{update.effective_user.id} required soup ({budget}, {budget_key})")
+    logger.info(
+        f"user #{update.effective_user.id} required soup ({budget}, {budget_key})"
+    )
 
     update.message.reply_text(
         soup_cache["budgets"][budget][budget_key],

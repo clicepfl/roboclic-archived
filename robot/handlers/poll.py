@@ -2,9 +2,10 @@ import json
 import random
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Poll
-from telegram.ext import CommandHandler, ConversationHandler, Filters, MessageHandler
+from telegram.ext import (CommandHandler, ConversationHandler, Filters,
+                          MessageHandler)
 
-from ..config import OPTIONS, KEYS, POLL, LIMIT, STATS, logger
+from ..config import KEYS, LIMIT, OPTIONS, POLL, STATS, logger
 from ..rights import clic
 
 
@@ -93,6 +94,7 @@ def create_poll(update, context):
             pass
 
     return ConversationHandler.END
+
 
 @clic
 def stats(update, context):

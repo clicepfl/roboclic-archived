@@ -2,6 +2,7 @@ from telegram import Poll
 
 from ..rights import clic
 
+
 @clic
 def bureau(update, context):
     question = "Qui est au bureau ?"

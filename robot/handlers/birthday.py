@@ -2,8 +2,8 @@ import random
 
 from telegram import Poll
 
-from ..rights import clic
 from ..config import BIRTHDAYS, LIMIT, OPTIONS
+from ..rights import clic
 
 
 @clic
