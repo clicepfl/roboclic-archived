@@ -2,9 +2,11 @@ import random
 
 from telegram import Poll
 
+from ..rights import clic
 from ..config import BIRTHDAYS, LIMIT, OPTIONS
 
 
+@clic
 def birthday(update, context):
     options = list(OPTIONS.values())
     user_id = random.sample(list(OPTIONS), 1)[0]

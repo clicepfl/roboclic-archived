@@ -4,9 +4,11 @@ import random
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Poll
 from telegram.ext import CommandHandler, ConversationHandler, Filters, MessageHandler
 
-from ..config import *
+from ..config import OPTIONS, KEYS, POLL, LIMIT, STATS, logger
+from ..rights import clic
 
 
+@clic
 def poll(update, context):
     logger.info(f"Poll started by:\n{update}")
     context.user_data.update({"user": update.message.from_user.username})
@@ -77,7 +79,7 @@ def create_poll(update, context):
         allows_multiple_answers=False,
     )
 
-    if chat_id in KEYS.get("groups", {chat_id}):
+    if "groups" not in KEYS or chat_id in KEYS["groups"]:
         increment_stats(answer, STATS)
 
     if "admin" in KEYS:
@@ -92,7 +94,7 @@ def create_poll(update, context):
 
     return ConversationHandler.END
 
-
+@clic
 def stats(update, context):
     stats = json.load(open(STATS))
     if not len(context.args):

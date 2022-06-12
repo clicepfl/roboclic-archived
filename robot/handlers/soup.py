@@ -156,15 +156,13 @@ def soup(update, context):
         if vegetarian:
             menu.vegetarian()
         menu = menu.filter()
-        logger.info("Not seen this budget before!")
-        logger.info(budget, budget_key)
         soup_cache["budgets"][budget] = {budget_key: str(menu)}
     elif vegetarian and "vegetarian" not in soup_cache["budgets"][budget]:
         menu.vegetarian()
         menu = menu.filter()
-        logger.info("I've seen this budget, but it wasn't vegetarian!")
-        logger.info(budget, budget_key)
         soup_cache["budgets"][budget].update({"vegetarian": str(menu)})
+
+    logger.info(f"user #{update.effective_user.id} required soup ({budget}, {budget_key})")
 
     update.message.reply_text(
         soup_cache["budgets"][budget][budget_key],

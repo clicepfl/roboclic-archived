@@ -1,3 +1,7 @@
+from ..rights import clic
+
+
+@clic
 def cafe(update, context):
     text = ""
     if len(context.args):
