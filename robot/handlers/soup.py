@@ -1,6 +1,5 @@
 import math
 import os
-from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime
 from random import sample
@@ -47,7 +46,6 @@ class Dish:
 
 class Menu:
     dishes: Iterable[Dish]
-    filters: List[Callable[[Dish], bool]]
 
     def __init__(self, dishes: Iterable[Dish]):
         self.dishes = dishes
@@ -61,22 +59,6 @@ class Menu:
         else:
             return "Pas de résultat correspondant aux filtres, c'est régime"
 
-    def add_filter(self, filter0: Callable[[Dish], bool]):
-        self.filters.append(filter0)
-
-    def vegetarian(self):
-        self.add_filter(lambda d: d.vegetarian)
-
-    def budget(self, budget):
-        self.add_filter(lambda d: min(d.prices) <= budget)
-
-    def filter(self):
-        return Menu(
-            dish
-            for dish in self.dishes
-            if all(filter0(dish) for filter0 in self.filters)
-        )
-
     @staticmethod
     def from_html(html):
         # removes non-Lausanne results
@@ -89,7 +71,7 @@ class Menu:
         dishes = []
         for item in content:
             prices = []
-            for price in item.findAll("span", {"class": "price"}):
+            for price in item.find_all("span", {"class": "price"}):
                 try:
                     # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
                     if "g" not in price and float(price.text[2:-4]) > 0:
@@ -101,16 +83,42 @@ class Menu:
                     # do not add the restaurant's entry
                     pass
             if len(prices):
-                resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
+                resto = item.find("td", {"class": "restaurant"}).text.strip()[
                     :7  # very future proof solution
                 ]
                 resto = alias.get(resto, resto)
                 if resto not in excluded:
-                    descr = item.findAll("div", {"class": "descr"})[0]
-                    dish_name = descr.findAll("b")[0].text.replace("\n", " ")
-                    vegetarian = "végétarien" in descr
+                    descr = item.find("div", {"class": "descr"})
+                    dish_name = descr.find("b").text.replace("\n", " ")
+                    vegetarian = bool(descr.find("em"))
+                    logger.info(descr)
+                    logger.info(vegetarian)
                     dishes.append(Dish(prices, resto, dish_name, vegetarian))
         return Menu(dishes)
+
+
+class MenuFilter:
+    filters: List[Callable[[Dish], bool]]
+
+    def __init__(self):
+        self.filters = []
+
+    def add_filter(self, filter0: Callable[[Dish], bool]) -> None:
+        self.filters.append(filter0)
+
+    def vegetarian(self) -> None:
+        self.add_filter(lambda d: d.vegetarian)
+
+    def budget(self, budget: float) -> None:
+        self.add_filter(lambda d: min(d.prices) <= budget)
+
+    def __call__(self, menu: Menu) -> Menu:
+        logger.info(f"Filtering with {self.filters}")
+        return Menu(
+            dish
+            for dish in menu.dishes
+            if all(filter0(dish) for filter0 in self.filters)
+        )
 
 
 def soup(update, context):
@@ -128,11 +136,9 @@ def soup(update, context):
         os.system(f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}")
         REQUEST_TIMER["soup"] = now
         with open(MENU, "r") as markup:
-            menu = Menu.from_html(markup)
-            context.bot_data["soup_cache"] = {"menu": menu, "budgets": {}}
+            context.bot_data["soup_cache"] = Menu.from_html(markup)
 
-    soup_cache = context.bot_data["soup_cache"]
-    menu: Menu = deepcopy(soup_cache["menu"])
+    menu: Menu = context.bot_data["soup_cache"]
     inputs: List[Any] = context.args
 
     # arg parsing
@@ -149,25 +155,21 @@ def soup(update, context):
             if vegetarian is None and arg.lower().replace("é", "e") in VEGETARIAN_WORDS:
                 vegetarian = True
     if budget is None:
-        budget = 40.0
+        budget = False
     if vegetarian is None:
         vegetarian = False
 
-    budget_key = "vegetarian" if vegetarian else "omnivore"
-
-    if budget not in soup_cache["budgets"]:
-        menu.budget(budget)
+    if budget or vegetarian:
+        menu_filter = MenuFilter()
+        if budget:
+            menu_filter.budget(budget)
         if vegetarian:
-            menu.vegetarian()
-        menu = menu.filter()
-        soup_cache["budgets"][budget] = {budget_key: str(menu)}
-    elif vegetarian and "vegetarian" not in soup_cache["budgets"][budget]:
-        menu.vegetarian()
-        menu = menu.filter()
-        soup_cache["budgets"][budget].update({"vegetarian": str(menu)})
+            menu_filter.vegetarian()
+        if len(menu_filter.filters):
+            menu = menu_filter(menu)
 
     update.message.reply_text(
-        soup_cache["budgets"][budget][budget_key],
+        str(menu),
         quote=False,
         parse_mode=telegram.constants.PARSEMODE_HTML,
     )
