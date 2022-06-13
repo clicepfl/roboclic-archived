@@ -1,3 +1,4 @@
+import math
 import os
 from copy import deepcopy
 from dataclasses import dataclass
@@ -9,6 +10,8 @@ import telegram
 from bs4 import BeautifulSoup as bs
 
 from ..config import MENU, REQUEST_TIMER, SOUP, logger
+from ..rights import admin
+
 
 EMOJIS_FOOD = [
     "🥕",
@@ -89,12 +92,16 @@ class Menu:
         for item in content:
             prices = []
             for price in item.findAll("span", {"class": "price"}):
-                # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
-                if "g" not in price and float(price.text[2:-4]) > 0:
-                    if len(price) > 1 or "E" in price.text:
-                        prices.append(float(price.text[2:-4]))
-                    else:
-                        prices.append(float(price.text[:-3]))
+                try:
+                    # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
+                    if "g" not in price and float(price.text[2:-4]) > 0:
+                        if len(price) > 1 or "E" in price.text:
+                            prices.append(float(price.text[2:-4]))
+                        else:
+                            prices.append(float(price.text[:-3]))
+                except:
+                    # do not add the restaurant's entry
+                    pass
             if len(prices):
                 resto = item.findAll("td", {"class": "restaurant"})[0].text.strip()[
                     :7  # very future proof solution
@@ -108,11 +115,15 @@ class Menu:
         return Menu(dishes)
 
 
+@admin
 def soup(update, context):
     """
     Uses bs4 and a curl script to scrape FLEP's daily menus and output all meals fitting the criterion.
     As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
     """
+    logger.info(
+        f"user #{update.effective_user.id} required soup ({context.args})"
+    )
     now = datetime.now()
     if (
         "soup" not in REQUEST_TIMER
@@ -136,14 +147,14 @@ def soup(update, context):
         for arg in inputs[:2]:
             if budget is None:
                 try:
-                    budget = max(5.0, min(40.0, round(float(arg), 1)))
+                    budget = max(5.0, min(40.0, math.ceil(float(arg))))
                     continue
                 except:
                     pass
             if vegetarian is None and arg.lower().replace("é", "e") in VEGETARIAN_WORDS:
                 vegetarian = True
     if budget is None:
-        budget = 10.0
+        budget = 40.0
     if vegetarian is None:
         vegetarian = False
 
@@ -159,10 +170,6 @@ def soup(update, context):
         menu.vegetarian()
         menu = menu.filter()
         soup_cache["budgets"][budget].update({"vegetarian": str(menu)})
-
-    logger.info(
-        f"user #{update.effective_user.id} required soup ({budget}, {budget_key})"
-    )
 
     update.message.reply_text(
         soup_cache["budgets"][budget][budget_key],
