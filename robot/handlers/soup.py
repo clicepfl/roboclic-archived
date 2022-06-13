@@ -10,8 +10,6 @@ import telegram
 from bs4 import BeautifulSoup as bs
 
 from ..config import MENU, REQUEST_TIMER, SOUP, logger
-from ..rights import admin
-
 
 EMOJIS_FOOD = [
     "🥕",
@@ -115,15 +113,12 @@ class Menu:
         return Menu(dishes)
 
 
-@admin
 def soup(update, context):
     """
     Uses bs4 and a curl script to scrape FLEP's daily menus and output all meals fitting the criterion.
     As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
     """
-    logger.info(
-        f"user #{update.effective_user.id} required soup ({context.args})"
-    )
+    logger.info(f"user #{update.effective_user.id} required soup ({context.args})")
     now = datetime.now()
     if (
         "soup" not in REQUEST_TIMER
