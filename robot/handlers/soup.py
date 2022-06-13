@@ -1,4 +1,3 @@
-import math
 import os
 from dataclasses import dataclass
 from datetime import datetime
@@ -9,6 +8,7 @@ import telegram
 from bs4 import BeautifulSoup as bs
 
 from ..config import MENU, REQUEST_TIMER, SOUP, logger
+
 
 EMOJIS_FOOD = [
     "🥕",
@@ -90,9 +90,7 @@ class Menu:
                 if resto not in excluded:
                     descr = item.find("div", {"class": "descr"})
                     dish_name = descr.find("b").text.replace("\n", " ")
-                    vegetarian = bool(descr.find("em"))
-                    logger.info(descr)
-                    logger.info(vegetarian)
+                    vegetarian = bool(descr.find(string="végétarien"))
                     dishes.append(Dish(prices, resto, dish_name, vegetarian))
         return Menu(dishes)
 
@@ -100,7 +98,7 @@ class Menu:
 class MenuFilter:
     filters: List[Callable[[Dish], bool]]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.filters = []
 
     def add_filter(self, filter0: Callable[[Dish], bool]) -> None:
@@ -148,7 +146,7 @@ def soup(update, context):
         for arg in inputs[:2]:
             if budget is None:
                 try:
-                    budget = max(5.0, min(40.0, math.ceil(float(arg))))
+                    budget = max(5.0, min(40.0, round(float(arg), 1)))
                     continue
                 except:
                     pass
