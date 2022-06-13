@@ -4,7 +4,8 @@ from telegram.ext import CommandHandler
 
 from .config import KEYS, logger
 
-LOGGING_INFO = "user #{} tried to start ({}) from chat #{}"
+LOGGING_GROUP_INFO = "user #{} tried to start [{}] from group #{}"
+LOGGING_DM_INFO = "user #{} tried to start [{}]"
 
 
 def clic(func):
@@ -13,7 +14,8 @@ def clic(func):
         user_id = update.effective_user.id
         chat_id = update.effective_chat.id
         if "groups" in KEYS and chat_id not in KEYS["groups"]:
-            return logger.info(LOGGING_INFO.format(user_id, func, chat_id))
+            template = LOGGING_GROUP_INFO if chat_id == user_id else LOGGING_DM_INFO
+            return logger.info(template.format(user_id, func, chat_id))
         return func(update, context, *args, **kwargs)
 
     return wrapped
@@ -24,8 +26,9 @@ def admin(func):
     def wrapped(update, context, *args, **kwargs):
         user_id = update.effective_user.id
         chat_id = update.effective_chat.id
-        if "admin" in KEYS and user_id not in KEYS["admin"]:
-            return logger.info(LOGGING_INFO.format(user_id, func, chat_id))
+        if "admin" in KEYS and user_id != KEYS["admin"]:
+            template = LOGGING_GROUP_INFO if chat_id == user_id else LOGGING_DM_INFO
+            return logger.info(template.format(user_id, func, chat_id))
         return func(update, context, *args, **kwargs)
 
     return wrapped
