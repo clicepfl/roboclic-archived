@@ -1,5 +1,10 @@
 from telegram.ext import CallbackQueryHandler, CommandHandler, Updater
 
+import os
+import sys
+from threading import Thread
+
+from robot.rights import admin
 from robot.config import KEYS, NORMAL_COMMANDS, logger
 from robot.handlers import *
 
@@ -17,6 +22,16 @@ if __name__ == "__main__":
     dp = updater.dispatcher
 
     # Special handlers
+    def stop_and_restart():
+        updater.stop()
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
+    @admin
+    def restart(update, context):
+        update.message.reply_text("Bot is restarting...")
+        Thread(target=stop_and_restart).start()
+    
+    dp.add_handler(CommandHandler("r", restart))
     dp.add_handler(CommandHandler("help", help, pass_args=True))
     dp.add_handler(poll_conv_handler)
     dp.add_handler(CallbackQueryHandler(poll_keyboard_handler))
