@@ -11,8 +11,6 @@ if __name__ == "__main__":
         """
         logger.warning(f'Update "{update}" caused error "{context.error}"')
 
-    logger.info(f"Keys: {KEYS}")
-
     updater = Updater(token=KEYS["token"], use_context=True)
     dp = updater.dispatcher
 
