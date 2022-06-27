@@ -41,7 +41,7 @@ class Dish:
     vegetarian: bool
 
     def __str__(self):
-        return f"🍽️<b> {min(self.prices)} CHF</b> - <i>{self.name_resto}</i> → {self.dish_name}."
+        return f"🍽️{'🥬' if self.vegetarian else '🍖'}<b> {min(self.prices)} CHF</b> - <i>{self.name_resto}</i> → {self.dish_name}."
 
 
 class Menu:
