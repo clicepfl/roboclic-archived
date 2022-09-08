@@ -12,6 +12,7 @@ def bureau(update, context):
         "Je compte m'y rendre bientôt",
         "J'y suis pas",
         "Je suis pas en Suisse",
+	"Je suis à Satellite",
     ]
     context.bot.send_poll(
         chat_id=update.effective_chat.id,
