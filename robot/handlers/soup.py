@@ -74,7 +74,14 @@ class Menu:
             for price in item.find_all("span", {"class": "price"}):
                 try:
                     # removes prix au gramme prices as they're scam and meals with prices=0 due to restaurateur not being honnetes and cheating the price filters
-                    if "g" not in price and float(price.text[2:-4]) > 0:
+                    if "g" in price.text :
+                        logger.debug("Un menu avec prix au poids est détecté : ({}) {}".format(
+                            item.find("td", {"class": "restaurant"}).text.strip(),
+                            descr.find("b").text.replace("\n", " ")))
+                        prices = []
+                        break
+                        
+                    if float(price.text[2:-4]) > 0:
                         if len(price) > 1 or "E" in price.text:
                             prices.append(float(price.text[2:-4]))
                         else:
