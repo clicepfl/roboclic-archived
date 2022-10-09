@@ -175,7 +175,7 @@ def soup(update, context):
         if len(menu_filter.filters):
             menu = menu_filter(menu)
 
-   soup_id = update.message.reply_text(
+    soup_id = update.message.reply_text(
         str(menu),
         quote=False,
         parse_mode=telegram.constants.PARSEMODE_HTML,
