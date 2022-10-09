@@ -63,7 +63,7 @@ class Menu:
         # removes non-Lausanne results
         excluded = set(["La Ruch", "Microci", "Hodler"])
         # handle edge case names
-        alias = {"La Tabl": "Vallotton", "Maharaj": "Maharaja", "Satelli":"Sat"}
+        alias = {"La Tabl": "Vallotton", "Maharaj": "Maharaja", "Satelli": "Sat"}
        
         soup = bs(html, "html.parser")
         content = soup.find_all("tr", {"class": "menuPage"})
@@ -127,13 +127,13 @@ def soup(update, context):
     now = datetime.now()
     
     if "soup_group" not in REQUEST_TIMER:
-       REQUEST_TIMER["soup_group"]=[]
+       REQUEST_TIMER["soup_group"] = []
     if update.message.chat_id in REQUEST_TIMER["soup_group"] and (now-REQUEST_TIMER["soup_group"][update.message.chat_id][0]).total_seconds() < 3600:
         context.bot.send_message(
-                chat_id=update.message.chat_id,
-                text="🙄",
-                reply_to_message_id=REQUEST_TIMER["soup_group"][update.message.chat_id][1],
-                disable_notification=True)
+                chat_id = update.message.chat_id,
+                text = "🙄",
+                reply_to_message_id = REQUEST_TIMER["soup_group"][update.message.chat_id][1],
+                disable_notification = True)
         return
     if (
         "soup" not in REQUEST_TIMER
@@ -180,4 +180,4 @@ def soup(update, context):
         quote=False,
         parse_mode=telegram.constants.PARSEMODE_HTML,
     ).message_id()
-    REQUEST_TIMER["soup_group"][update.message.chat_id]=(now, soup_id)
+    REQUEST_TIMER["soup_group"][update.message.chat_id] = (now, soup_id)
