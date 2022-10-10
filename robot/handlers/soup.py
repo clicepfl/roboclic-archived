@@ -179,5 +179,5 @@ def soup(update, context):
         str(menu),
         quote=False,
         parse_mode=telegram.constants.PARSEMODE_HTML,
-    ).message_id()
+    ).message_id
     REQUEST_TIMER["soup_group"][update.message.chat_id] = (now, soup_id)
