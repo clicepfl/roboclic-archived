@@ -128,7 +128,7 @@ def soup(update, context):
     
     if "soup_group" not in REQUEST_TIMER:
        REQUEST_TIMER["soup_group"] = {}
-    if update.message.chat_id in REQUEST_TIMER["soup_group"] and (now-REQUEST_TIMER["soup_group"][update.message.chat_id][0]).total_seconds() < 3600:
+    if update.message.chat_id in REQUEST_TIMER["soup_group"] and (now-REQUEST_TIMER["soup_group"][str(update.message.chat_id)][0]).total_seconds() < 3600:
         context.bot.send_message(
                 chat_id = update.message.chat_id,
                 text = "🙄",
