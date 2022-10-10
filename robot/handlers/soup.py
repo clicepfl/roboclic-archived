@@ -132,7 +132,7 @@ def soup(update, context):
         context.bot.send_message(
                 chat_id = update.message.chat_id,
                 text = "🙄",
-                reply_to_message_id = REQUEST_TIMER["soup_group"][update.message.chat_id][1],
+                reply_to_message_id = REQUEST_TIMER["soup_group"][str(update.message.chat_id)][1],
                 disable_notification = True)
         return
     if (
