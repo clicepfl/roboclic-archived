@@ -27,6 +27,9 @@ if __name__ == "__main__":
     except KeyError:
         logger.info(f"{fname} handler not found/imported")
 
+    # Carte
+    dp.add_handler(CARTE_CONV_HANDLER)
+
     # Start the bot
     updater.start_polling()
     updater.idle()
