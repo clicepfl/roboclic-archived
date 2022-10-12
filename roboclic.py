@@ -2,6 +2,7 @@ from telegram.ext import CallbackQueryHandler, CommandHandler, Updater
 
 from robot.config import KEYS, NORMAL_COMMANDS, logger
 from robot.handlers import *
+from robot.handlers.carte import CARTE_CONV_HANDLER
 
 if __name__ == "__main__":
 
