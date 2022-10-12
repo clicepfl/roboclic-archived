@@ -1,4 +1,5 @@
 from ..rights import clic
+from ..config import COMITE_IDS
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler, MessageHandler, Filters
@@ -40,7 +41,10 @@ def carte_start(update, context) -> None:
 
     keyboard.append([InlineKeyboardButton("Just checking, merci !", callback_data="cancel")])
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    if COMITE_IDS:
+        reply_markup = InlineKeyboardMarkup(keyboard) if update.message.from_user.id in COMITE_IDS else None
+    else:
+        reply_markup = InlineKeyboardMarkup(keyboard)
 
     m = update.message.reply_text(text, reply_markup=reply_markup)
     context.bot_data["carte"]["message"] = m.message_id
@@ -52,6 +56,8 @@ def carte_choices(update, context) -> None:
     """Parses the CallbackQuery and updates the message text."""
     query = update.callback_query
     query_name = query.from_user.first_name
+    if COMITE_IDS and query.from_user.id not in COMITE_IDS:
+        return
 
     # CallbackQueries need to be answered, even if no notification to the user is needed
     # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
