@@ -39,6 +39,10 @@ for line in open_utf8_r(HELPER_TEXTS):
 KEYS = json.load(open(".keys"))
 OPTIONS = json.load(open("robot/config/options.json"))
 BIRTHDAYS = json.load(open("robot/config/birthday.json"))
+try:
+    COMITE_IDS = json.load(open("robot/config/comite.json")).values()
+except:
+    COMITE_IDS = []
 
 REQUEST_TIMER = {"launched": datetime.now()}
 

@@ -1,4 +1,5 @@
 .keys
+robot/config/comite.json
 stats.json
 menu.html
 __pycache__
