@@ -2,6 +2,7 @@ from telegram.ext import CallbackQueryHandler, CommandHandler, Updater
 
 from robot.config import KEYS, NORMAL_COMMANDS, logger
 from robot.handlers import *
+from robot.handlers.carte import CARTE_CONV_HANDLER
 
 if __name__ == "__main__":
 
@@ -26,6 +27,9 @@ if __name__ == "__main__":
             dp.add_handler(CommandHandler(fname, globals()[fname]))
     except KeyError:
         logger.info(f"{fname} handler not found/imported")
+
+    # Carte
+    dp.add_handler(CARTE_CONV_HANDLER)
 
     # Start the bot
     updater.start_polling()
