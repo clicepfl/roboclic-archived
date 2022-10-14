@@ -16,8 +16,8 @@ if __name__ == "__main__":
 
     # Special handlers
     dp.add_handler(CommandHandler("help", help, pass_args=True))
-    #dp.add_handler(poll_conv_handler)
-    #dp.add_handler(CallbackQueryHandler(poll_keyboard_handler))
+    # dp.add_handler(poll_conv_handler)
+    # dp.add_handler(CallbackQueryHandler(poll_keyboard_handler))
     dp.add_error_handler(error)
 
     # Regular handlers

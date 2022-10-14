@@ -11,7 +11,7 @@ def bureau(update, context):
         "Je suis à proximité du bureau",
         "Je compte m'y rendre bientôt",
         "J'y suis pas",
-	      "Je suis à Satellite",
+        "Je suis à Satellite",
         "Je suis pas en Suisse",
     ]
     context.bot.send_poll(

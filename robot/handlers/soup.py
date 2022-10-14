@@ -1,4 +1,5 @@
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from random import sample
@@ -8,8 +9,6 @@ import telegram
 from bs4 import BeautifulSoup as bs
 
 from ..config import MENU, REQUEST_TIMER, SOUP, logger
-
-import sys
 
 EMOJIS_FOOD = [
     "🥕",
@@ -32,6 +31,7 @@ EMOJIS_FOOD = [
     "🥩",
 ]
 VEGETARIAN_WORDS = {"veg", "vege", "vegetarien", "vegetarian"}
+
 
 @dataclass
 class Dish:
@@ -65,7 +65,7 @@ class Menu:
         excluded = set(["La Ruch", "Microci", "Hodler"])
         # handle edge case names
         alias = {"La Tabl": "Vallotton", "Maharaj": "Maharaja", "Satelli": "Sat"}
-       
+
         soup = bs(html, "html.parser")
         content = soup.find_all("tr", {"class": "menuPage"})
         dishes = []
@@ -126,15 +126,24 @@ def soup(update, context):
     """
     logger.info(f"user #{update.effective_user.id} required soup ({context.args})")
     now = datetime.now()
-    
+
     if "soup_group" not in REQUEST_TIMER:
-       REQUEST_TIMER["soup_group"] = {}
-    if str(update.message.chat_id) in REQUEST_TIMER["soup_group"] and (now-REQUEST_TIMER["soup_group"][str(update.message.chat_id)][0]).total_seconds() < 3600:
+        REQUEST_TIMER["soup_group"] = {}
+    if (
+        str(update.message.chat_id) in REQUEST_TIMER["soup_group"]
+        and (
+            now - REQUEST_TIMER["soup_group"][str(update.message.chat_id)][0]
+        ).total_seconds()
+        < 3600
+    ):
         context.bot.send_message(
-                chat_id = update.message.chat_id,
-                text = "🙄",
-                reply_to_message_id = REQUEST_TIMER["soup_group"][str(update.message.chat_id)][1],
-                disable_notification = True)
+            chat_id=update.message.chat_id,
+            text="🙄",
+            reply_to_message_id=REQUEST_TIMER["soup_group"][
+                str(update.message.chat_id)
+            ][1],
+            disable_notification=True,
+        )
         return
     if (
         "soup" not in REQUEST_TIMER
@@ -176,24 +185,22 @@ def soup(update, context):
         if len(menu_filter.filters):
             menu = menu_filter(menu)
 
-
-    if len(str(menu))>8000:
+    if len(str(menu)) > 8000:
         soup_id = update.message.reply_text(
             str(menu)[:8000],
             quote=False,
             parse_mode=telegram.constants.PARSEMODE_HTML,
-            ).message_id
+        ).message_id
         sys.sleep(100)
         update.message.reply_text(
             str(menu)[8000:],
             quote=False,
             parse_mode=telegram.constants.PARSEMODE_HTML,
-            ).message_id
+        ).message_id
     else:
         soup_id = update.message.reply_text(
             str(menu),
             quote=False,
             parse_mode=telegram.constants.PARSEMODE_HTML,
-            ).message_id
+        ).message_id
     REQUEST_TIMER["soup_group"][str(update.message.chat_id)] = (now, soup_id)
-    
