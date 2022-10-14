@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup as bs
 
 from ..config import MENU, REQUEST_TIMER, SOUP, logger
 
+import sys
 
 EMOJIS_FOOD = [
     "🥕",
@@ -182,11 +183,17 @@ def soup(update, context):
             quote=False,
             parse_mode=telegram.constants.PARSEMODE_HTML,
             ).message_id
+        sys.sleep(100)
         update.message.reply_text(
             str(menu)[8000:],
             quote=False,
             parse_mode=telegram.constants.PARSEMODE_HTML,
             ).message_id
-
+    else:
+        soup_id = update.message.reply_text(
+            str(menu),
+            quote=False,
+            parse_mode=telegram.constants.PARSEMODE_HTML,
+            ).message_id
     REQUEST_TIMER["soup_group"][str(update.message.chat_id)] = (now, soup_id)
     
