@@ -175,9 +175,18 @@ def soup(update, context):
         if len(menu_filter.filters):
             menu = menu_filter(menu)
 
-    soup_id = update.message.reply_text(
-        str(menu),
-        quote=False,
-        parse_mode=telegram.constants.PARSEMODE_HTML,
-    ).message_id
+
+    if len(str(menu))>8000:
+        soup_id = update.message.reply_text(
+            str(menu)[:8000],
+            quote=False,
+            parse_mode=telegram.constants.PARSEMODE_HTML,
+            ).message_id
+        update.message.reply_text(
+            str(menu)[8000:],
+            quote=False,
+            parse_mode=telegram.constants.PARSEMODE_HTML,
+            ).message_id
+
     REQUEST_TIMER["soup_group"][str(update.message.chat_id)] = (now, soup_id)
+    
