@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
     # Special handlers
     dp.add_handler(CommandHandler("help", help, pass_args=True))
+    dp.add_handler(CARTE_CONV_HANDLER)
     dp.add_handler(poll_conv_handler)
     dp.add_handler(CallbackQueryHandler(poll_keyboard_handler))
     dp.add_error_handler(error)
@@ -27,9 +28,6 @@ if __name__ == "__main__":
             dp.add_handler(CommandHandler(fname, globals()[fname]))
     except KeyError:
         logger.info(f"{fname} handler not found/imported")
-
-    # Carte
-    dp.add_handler(CARTE_CONV_HANDLER)
 
     # Start the bot
     updater.start_polling()
