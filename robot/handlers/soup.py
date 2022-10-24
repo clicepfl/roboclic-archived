@@ -168,7 +168,7 @@ def soup(update, context):
             c.setopt(pycurl.CAINFO, certifi.where())
             c.perform()
             c.close()
-            markup = menu_buffer.getValue().decode(('iso-8859-1'))
+            markup = menu_buffer.getValue().decode('iso-8859-1')
         
         except:
             logger.error("soup: error on fetching raw menu")
@@ -181,9 +181,6 @@ def soup(update, context):
                 quote=False
             )
             return
-
-        # update the most recent fetch's timestamp
-        REQUEST_TIMER[fetch_cache] = now
 
         # parse the raw html
         try:
@@ -199,6 +196,9 @@ def soup(update, context):
                 quote=False
             )
             return
+
+        # update the most recent fetch's timestamp
+        REQUEST_TIMER[fetch_cache] = now
 
         # the parsed html is cached in the bot's memory
         context.bot_data[fetch_cache] = parsed_menu
