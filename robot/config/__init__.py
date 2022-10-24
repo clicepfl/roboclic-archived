@@ -46,6 +46,8 @@ except:
 
 REQUEST_TIMER = {"launched": datetime.now()}
 
+SOUP_ENDPOINT = "https://www.epfl.ch/campus/restaurants-shops-hotels/fr/offre-du-jour-de-tous-les-points-de-restauration/"
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )

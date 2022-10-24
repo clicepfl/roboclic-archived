@@ -1,13 +1,16 @@
 import os
 from dataclasses import dataclass
 from datetime import datetime
+from io import BytesIO
 from random import sample
 from typing import Any, Callable, Iterable, List
 
 import telegram
+import certifi
+import pycurl
 from bs4 import BeautifulSoup as bs
 
-from ..config import MENU, REQUEST_TIMER, SOUP, logger
+from ..config import MENU, REQUEST_TIMER, SOUP, SOUP_ENDPOINT, logger
 
 
 EMOJIS_FOOD = [
@@ -151,6 +154,14 @@ def soup(update, context):
     # a request still has to trigger the fetch!
     fetch_cache = "soup_cache"
 
+    # type check
+    if fetch_cache in REQUEST_TIMER:
+        try:
+            elapsed_time_soup = (now - REQUEST_TIMER[fetch_cache]).total_seconds()
+        except:
+            logger.error(f"inconsistent soup timer cache entry: expected datetime")
+            return
+
     # fetch if nothing is currently cached or if the cache expired
     if (
         fetch_cache not in REQUEST_TIMER or
@@ -158,15 +169,25 @@ def soup(update, context):
     ):
 
         # fetch the raw html
-        os.system(f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}")
+        try:
+            menu_buffer = BytesIO()
+            c = pycurl.Curl()
+            c.setopt(pycurl.URL, SOUP_ENDPOINT)
+            c.setopt(pycurl.WRITEDATA, menu_buffer)
+            c.setopt(pycurl.CAINFO, certifi.where())
+            c.perform()
+            c.close()
+            markup = menu_buffer.getValue().decode(('iso-8859-1'))
+        except:
+            logger.error("error when fetching raw menu")
+            return
 
         # update the most recent fetch's timestamp
         REQUEST_TIMER[fetch_cache] = now
 
         # parse the raw html and cache it as the most recent fetch
         # the parsed html is cached in the bot's memory
-        with open(MENU, "r") as markup:
-            context.bot_data[fetch_cache] = Menu.from_html(markup)
+        context.bot_data[fetch_cache] = Menu.from_html(markup)
 
     # following the code above, the cache entry must exist
     menu: Menu = context.bot_data[fetch_cache]
