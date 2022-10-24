@@ -1,6 +1,5 @@
-import os
+import datetime
 from dataclasses import dataclass
-from datetime import datetime
 from io import BytesIO
 from random import sample
 from typing import Any, Callable, Iterable, List
@@ -129,7 +128,7 @@ def soup(update, context):
     logger.info(f"user #{update.effective_user.id} required soup ({context.args})")
 
     # timer entry relevant for caching logic
-    now = datetime.now()
+    now = datetime.datetime.now()
 
     # limit the number of soup request per chat id to one per hour
     # this is the cache entry to store the chat ids and their request times
@@ -154,14 +153,6 @@ def soup(update, context):
     # a request still has to trigger the fetch!
     fetch_cache = "soup_cache"
 
-    # type check
-    if fetch_cache in REQUEST_TIMER:
-        try:
-            elapsed_time_soup = (now - REQUEST_TIMER[fetch_cache]).total_seconds()
-        except:
-            logger.error(f"inconsistent soup timer cache entry: expected datetime")
-            return
-
     # fetch if nothing is currently cached or if the cache expired
     if (
         fetch_cache not in REQUEST_TIMER or
@@ -178,16 +169,32 @@ def soup(update, context):
             c.perform()
             c.close()
             markup = menu_buffer.getValue().decode(('iso-8859-1'))
+        
         except:
             logger.error("error when fetching raw menu")
+
+            # wait 10 minutes before trying to fetch again
+            REQUEST_TIMER[fetch_cache] = now - datetime.timedelta(hours=1) + datetime.timedelta(minutes=10)
+
+            update.message.reply_text(
+                "Petit problème du côté d'EPFL campus ! La commande sera de nouveau disponible dans quelques minutes.",
+                quote=False
+            )
             return
 
         # update the most recent fetch's timestamp
         REQUEST_TIMER[fetch_cache] = now
 
-        # parse the raw html and cache it as the most recent fetch
+        # parse the raw html
+        try:
+            parsed_menu = Menu.from_html(markup)
+        except:
+            # wait 10 minutes before trying to fetch and parse again
+            REQUEST_TIMER[fetch_cache] = now - datetime.timedelta(hours=1) + datetime.timedelta(minutes=10)
+            return
+
         # the parsed html is cached in the bot's memory
-        context.bot_data[fetch_cache] = Menu.from_html(markup)
+        context.bot_data[fetch_cache] = parsed_menu
 
     # following the code above, the cache entry must exist
     menu: Menu = context.bot_data[fetch_cache]
