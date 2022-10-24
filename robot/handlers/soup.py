@@ -159,7 +159,7 @@ def soup(update, context):
         (now - REQUEST_TIMER[fetch_cache]).total_seconds() >= 3600
     ):
 
-        # fetch the raw html
+        # fetch and parse the raw html
         try:
             menu_buffer = BytesIO()
             c = pycurl.Curl()
@@ -169,26 +169,13 @@ def soup(update, context):
             c.perform()
             c.close()
             markup = menu_buffer.getValue().decode('iso-8859-1')
+
+            parsed_menu = Menu.from_html(markup)
         
         except:
-            logger.error("soup: error on fetching raw menu")
+            logger.error("soup: error on fetching/parsing raw menu")
 
             # wait 10 minutes before trying to fetch again
-            REQUEST_TIMER[fetch_cache] = now - datetime.timedelta(hours=1) + datetime.timedelta(minutes=10)
-
-            update.message.reply_text(
-                "Petit problème du côté d'EPFL campus ! La commande sera de nouveau disponible dans quelques minutes.",
-                quote=False
-            )
-            return
-
-        # parse the raw html
-        try:
-            parsed_menu = Menu.from_html(markup)
-        except:
-            logger.error("soup: error on parsing raw menu")
-
-            # wait 10 minutes before trying to fetch and parse again
             REQUEST_TIMER[fetch_cache] = now - datetime.timedelta(hours=1) + datetime.timedelta(minutes=10)
 
             update.message.reply_text(
