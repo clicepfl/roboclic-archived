@@ -4,8 +4,7 @@ from datetime import datetime
 
 from .. import open_utf8_r
 
-LIMIT = 10
-POLL = 0
+POLL_LIMIT = 10
 
 JUL = "robot/config/jul.txt"
 RAYAN = "robot/config/rayan.txt"

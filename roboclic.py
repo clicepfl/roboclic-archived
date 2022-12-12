@@ -1,8 +1,7 @@
-from telegram.ext import CallbackQueryHandler, CommandHandler, Updater
+from telegram.ext import Application, CommandHandler, filters
 
 from robot.config import KEYS, NORMAL_COMMANDS, logger
 from robot.handlers import *
-from robot.handlers.carte import CARTE_CONV_HANDLER
 
 if __name__ == "__main__":
 
@@ -10,27 +9,24 @@ if __name__ == "__main__":
         """
         Error handler
         """
-        logger.warning(f'Update "{update}" caused error "{context.error}"')
+        logger.warning(f"Update \"{update}\" caused error \"{context.error}\"")
+    
+    app = Application.builder().token(KEYS["token"]).build()
 
-    updater = Updater(token=KEYS["token"], use_context=True)
-    dp = updater.dispatcher
+    conv_filter = filters.TEXT & (~filters.COMMAND)
 
     # Special handlers
-    dp.add_handler(CommandHandler("help", help, pass_args=True))
-    dp.add_handler(poll_conv_handler)
-    dp.add_handler(CallbackQueryHandler(poll_keyboard_handler))
-    dp.add_error_handler(error)
+    app.add_handler(CommandHandler("help", help, pass_args=True))
+    app.add_handler(poll_conv_handler, 0)
+    app.add_handler(carte_conv_handler, 0)
+    app.add_error_handler(error)
 
     # Regular handlers
     try:
         for fname in NORMAL_COMMANDS:
-            dp.add_handler(CommandHandler(fname, globals()[fname]))
+            app.add_handler(CommandHandler(fname, globals()[fname]), 1)
     except KeyError:
         logger.info(f"{fname} handler not found/imported")
 
-    # Carte
-    dp.add_handler(CARTE_CONV_HANDLER)
-
     # Start the bot
-    updater.start_polling()
-    updater.idle()
+    app.run_polling()

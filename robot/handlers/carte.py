@@ -102,19 +102,19 @@ def carte_give(update, context) -> None:
     return ConversationHandler.END
 
 
-CARTE_CONV_HANDLER = ConversationHandler(
-        entry_points=[CommandHandler("carte", carte_start)],
-        states={
-            CARTE_START: [
-                CallbackQueryHandler(carte_choices, pattern="^take$"),
-                CallbackQueryHandler(carte_choices, pattern="^give$"),
-                CallbackQueryHandler(carte_choices, pattern="^home$"),
-                CallbackQueryHandler(carte_choices, pattern="^cancel"),
-            ],
-            CARTE_GIVE: [
-                MessageHandler(Filters.text & ~Filters.command, carte_give),
-                CallbackQueryHandler(carte_choices, pattern="^cancel"),
-            ],
-        },
-        fallbacks=[CommandHandler("carte", carte_start)],
-    )
+carte_conv_handler = ConversationHandler(
+    entry_points=[CommandHandler("carte", carte_start)],
+    states={
+        CARTE_START: [
+            CallbackQueryHandler(carte_choices, pattern="^take$"),
+            CallbackQueryHandler(carte_choices, pattern="^give$"),
+            CallbackQueryHandler(carte_choices, pattern="^home$"),
+            CallbackQueryHandler(carte_choices, pattern="^cancel"),
+        ],
+        CARTE_GIVE: [
+            MessageHandler(Filters.text & ~Filters.command, carte_give),
+            CallbackQueryHandler(carte_choices, pattern="^cancel"),
+        ],
+    },
+    fallbacks=[CommandHandler("carte", carte_start)],
+)
