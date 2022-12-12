@@ -1,56 +1,76 @@
 import json
 import random
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Poll
-from telegram.ext import CommandHandler, ConversationHandler, Filters, MessageHandler
+from telegram import ReplyKeyboardButton, ReplyKeyboardMarkup, Poll
+from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, filters
 
-from ..config import KEYS, LIMIT, OPTIONS, POLL, STATS, logger
+from ..config import KEYS, POLL_LIMIT, OPTIONS, STATS, logger
 from ..rights import clic
+
+
+WHO_SAID_IT, SEND_POLL = range(1)
+
+
+def sanitize(text: str) -> str:
+    return ("".join(text)
+        .lower()
+        .replace("é", "e")
+        .replace("ï", "i")
+        .replace("ë", "e"))
 
 
 @clic
 def poll(update, context):
     logger.info(f"Poll started by:\n{update}")
-    context.user_data.update({"user": update.message.from_user.username})
+    context.user_data["user"] = update.message.from_user.username
+    
+    chat_id = update.message.chat.id
+    user_id = update.message.from_user.id
+
+    if chat_id in context.bot_data:
+        return ConversationHandler.END
+
+    context.bot_data[chat_id] = user_id
 
     keyboard = [
         [
-            InlineKeyboardButton(option, callback_data=data)
+            ReplyKeyboardButton(option, callback_data=data)
             for data, option in list(OPTIONS.items())[4 * row : 4 * (row + 1)]
         ]
         for row in range(len(OPTIONS))
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup, quote=False)
+    reply_markup = ReplyKeyboardMarkup(keyboard)
+    update.message.reply_text("Qui l'a dit ?", reply_markup=reply_markup)
     try:
         update.message.delete()
     except:
         logger.info(f"Could not delete message {update.message.message_id}")
 
-    return POLL
+    return WHO_SAID_IT
 
 
-def poll_keyboard_handler(update, context):
-    query = update.callback_query
-    query.answer()
-    answer = query.data
-    context.user_data.update({"answer": answer})
-    context.user_data.update({"callback_message": query.message})
-    logger.info(f"Selected {OPTIONS[answer]}")
-    query.edit_message_text(text=f"Qu'est-ce qui a été dit ?")
-
-
-def create_poll(update, context):
+def who_said_it(update, context):
     chat_id = update.message.chat.id
-    previous_message = context.user_data["callback_message"]
+    user_id = update.message.from_user.id
+
+    if user_id != context.bot_data[chat_id]:
+        return WHO_SAID_IT
+
+    answer = sanitize(update.message.text)
+
+    if answer not in OPTIONS:
+        return ConversationHandler.END
+
+    context.user_data["answer"] = answer
+
     try:
-        context.bot.delete_message(chat_id, previous_message.message_id)
+        update.message.delete()
     except:
-        logger.info(f"Could not delete message {previous_message.message_id}")
+        logger.info(f"Could not delete message {update.message_id}")
 
     answer = context.user_data["answer"]
-    logger.info(f'{OPTIONS[answer]} said "{update.message.text}"')
-    question = f'Qui a dit ça : "{update.message.text}"'
+    logger.info(f"{OPTIONS[answer]} said \"{update.message.text}\"")
+    question = f"Qui a dit ça : \"{update.message.text}\""
 
     try:
         update.message.delete()
@@ -59,10 +79,10 @@ def create_poll(update, context):
 
     answer_name = OPTIONS[answer]
     options = list(OPTIONS.values())
-    if len(OPTIONS) > LIMIT:
+    if len(OPTIONS) > POLL_LIMIT:
         options.remove(answer_name)
-        choices = random.sample(options, LIMIT - 1)
-        answer_id = random.randint(0, LIMIT - 1)
+        choices = random.sample(options, POLL_LIMIT - 1)
+        answer_id = random.randint(0, POLL_LIMIT - 1)
         choices.insert(answer_id, answer_name)
     else:
         choices = OPTIONS.values()[:]
@@ -87,10 +107,12 @@ def create_poll(update, context):
             author = context.user_data["user"]
             target = OPTIONS[context.user_data["answer"]]
             context.bot.send_message(
-                KEYS["admin"], f'Poll started by @{author}\nThe answer is "{target}"'
+                KEYS["admin"], f"Poll started by @{author}\nThe answer is \"{target}\""
             )
         except:
             pass
+
+    del context.bot_data[chat_id]
 
     return ConversationHandler.END
 
@@ -106,14 +128,7 @@ def stats(update, context):
             text += "No stat available"
         update.message.reply_text(text, quote=False)
     else:
-        # cumbersome formatting
-        query_user = (
-            context.args[0]
-            .lower()
-            .replace("é", "e")
-            .replace("ï", "i")
-            .replace("ë", "e")
-        )
+        query_user = sanitize("".join(context.args))
         user = OPTIONS.get(query_user, query_user.title())
         score = stats.get(query_user, 0)
         update.message.reply_text(f"{user}: {score}", quote=False)
@@ -129,6 +144,9 @@ def increment_stats(updated_user, stats_file):
 
 poll_conv_handler = ConversationHandler(
     entry_points=[CommandHandler("poll", poll)],
-    states={POLL: [MessageHandler(filters=Filters.text, callback=create_poll)]},
+    states={
+        WHO_SAID_IT: [MessageHandler(filters=filters.TEXT, callback=who_said_it)],
+        SEND_POLL: [MessageHandler(filters=filters.TEXT, callback=create_poll)]
+    },
     fallbacks=[],
 )

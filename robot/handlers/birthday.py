@@ -2,7 +2,7 @@ import random
 
 from telegram import Poll
 
-from ..config import BIRTHDAYS, LIMIT, OPTIONS
+from ..config import BIRTHDAYS, POLL_LIMIT, OPTIONS
 from ..rights import clic
 
 
@@ -16,13 +16,13 @@ def birthday(update, context):
 
     question = f"Qui est né le {date} ?"
 
-    if len(OPTIONS) > LIMIT:
+    if len(OPTIONS) > POLL_LIMIT:
         options.remove(username)
-        choices = random.sample(options, LIMIT - 1)
-        answer_id = random.randint(0, LIMIT - 1)
+        choices = random.sample(options, POLL_LIMIT - 1)
+        answer_id = random.randint(0, POLL_LIMIT - 1)
         choices.insert(answer_id, username)
     else:
-        choices = random.sample(OPTIONS.values(), LIMIT)
+        choices = random.sample(OPTIONS.values(), POLL_LIMIT)
         answer_id = choices.index(username)
 
     context.bot.send_poll(
