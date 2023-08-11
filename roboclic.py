@@ -1,3 +1,4 @@
+import telegram
 from telegram.ext import CallbackQueryHandler, CommandHandler, Updater
 
 from robot.config import KEYS, NORMAL_COMMANDS, logger
@@ -20,6 +21,27 @@ if __name__ == "__main__":
     dp.add_handler(poll_conv_handler)
     dp.add_handler(CallbackQueryHandler(poll_keyboard_handler))
     dp.add_error_handler(error)
+
+    updater.bot.set_chat_menu_button(None, telegram.MenuButtonCommands())
+    updater.bot.set_my_commands(
+        [
+            telegram.BotCommand("arthur", "Ressort une citation d'Arthur"),
+            telegram.BotCommand("birthday", "Crée une devinette de date d'anniversaire"),
+            telegram.BotCommand("bureau", "Crée un sondage pour savoir qui est au/près du bureau"),
+            telegram.BotCommand("cafe", "Indique la quantité de café au bureau"),
+            telegram.BotCommand("carte", "Indique/modifie qui est en possession de la carte invité"),
+            telegram.BotCommand("countdown", "Fait probablement quelquechose"),
+            telegram.BotCommand("help", "Voir /help"),
+            telegram.BotCommand("hugo", "Ressort une citation de Hugo"),
+            telegram.BotCommand("jul", "Crée une devinette sur des rappeurs"),
+            telegram.BotCommand("noel", "Donne le tel du Père Noël"),
+            telegram.BotCommand("poll", "Permet de créer un quiz sur une quote d'un comité"),
+            telegram.BotCommand("rayan", "Ressort une citation de Rayan"),
+            telegram.BotCommand("reuf", "Donne le tel du reuf"),
+            telegram.BotCommand("soup", "Technical difficulties, please stand by"),
+            telegram.BotCommand("year", "Indique l'avancement dans l'année"),
+        ]
+    )
 
     # Regular handlers
     try:
