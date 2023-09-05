@@ -1,13 +1,15 @@
-import os
+import datetime
 from dataclasses import dataclass
-from datetime import datetime
+from io import BytesIO
 from random import sample
 from typing import Any, Callable, Iterable, List
 
 import telegram
+import certifi
+import pycurl
 from bs4 import BeautifulSoup as bs
 
-from ..config import MENU, REQUEST_TIMER, SOUP, logger
+from ..config import MENU, REQUEST_TIMER, SOUP, SOUP_ENDPOINT, logger
 
 
 EMOJIS_FOOD = [
@@ -124,31 +126,75 @@ def soup(update, context):
     As of know, only supports price threshold (/soup 10 returns all meal under 10 chf)
     """
     logger.info(f"user #{update.effective_user.id} required soup ({context.args})")
-    now = datetime.now()
+
+    # timer entry relevant for caching logic
+    now = datetime.datetime.now()
+
+    # limit the number of soup request per chat id to one per hour
+    # this is the cache entry to store the chat ids and their request times
+    group_cache = "soup_group"
     
-    if "soup_group" not in REQUEST_TIMER:
-       REQUEST_TIMER["soup_group"] = {}
-    if str(update.message.chat_id) in REQUEST_TIMER["soup_group"] and (now-REQUEST_TIMER["soup_group"][str(update.message.chat_id)][0]).total_seconds() < 3600:
-        context.bot.send_message(
-                chat_id = update.message.chat_id,
-                text = "🙄",
-                reply_to_message_id = REQUEST_TIMER["soup_group"][str(update.message.chat_id)][1],
-                disable_notification = True)
-        return
+    # create the request timer cache entry
+    if group_cache not in REQUEST_TIMER:
+       REQUEST_TIMER[group_cache] = {}
+
+    # the chat id of the current request, this is the id of a timer cache entry
+    group_request = str(update.message.chat_id)
+
+    # the chat id already exists in the timer cache and the current request is too recent
     if (
-        "soup" not in REQUEST_TIMER
-        or (now - REQUEST_TIMER["soup"]).total_seconds() >= 3600
+        group_request in REQUEST_TIMER[group_cache] and
+        (now - REQUEST_TIMER[group_cache][group_request]).total_seconds() < 3600
     ):
-        # Fetches the daily menu
-        os.system(f"sh {SOUP} {datetime.today().strftime('%Y-%m-%d')}")
-        REQUEST_TIMER["soup"] = now
-        with open(MENU, "r") as markup:
-            context.bot_data["soup_cache"] = Menu.from_html(markup)
+        logger.info("dropped soup request")
+        return
 
-    menu: Menu = context.bot_data["soup_cache"]
+    # limit the fetch of the menu's data to one per hour
+    # a request still has to trigger the fetch!
+    fetch_cache = "soup_cache"
+
+    # fetch if nothing is currently cached or if the cache expired
+    if (
+        fetch_cache not in REQUEST_TIMER or
+        (now - REQUEST_TIMER[fetch_cache]).total_seconds() >= 3600
+    ):
+
+        # fetch and parse the raw html
+        try:
+            menu_buffer = BytesIO()
+            c = pycurl.Curl()
+            c.setopt(pycurl.URL, SOUP_ENDPOINT)
+            c.setopt(pycurl.WRITEDATA, menu_buffer)
+            c.setopt(pycurl.CAINFO, certifi.where())
+            c.perform()
+            c.close()
+            markup = menu_buffer.getValue().decode('iso-8859-1')
+
+            parsed_menu = Menu.from_html(markup)
+        
+        except:
+            logger.error("soup: error on fetching/parsing raw menu")
+
+            # wait 10 minutes before trying to fetch again
+            REQUEST_TIMER[fetch_cache] = now - datetime.timedelta(hours=1) + datetime.timedelta(minutes=10)
+
+            update.message.reply_text(
+                "Petit problème du côté d'EPFL campus ! La commande sera de nouveau disponible dans quelques minutes.",
+                quote=False
+            )
+            return
+
+        # update the most recent fetch's timestamp
+        REQUEST_TIMER[fetch_cache] = now
+
+        # the parsed html is cached in the bot's memory
+        context.bot_data[fetch_cache] = parsed_menu
+
+    # following the code above, the cache entry must exist
+    menu: Menu = context.bot_data[fetch_cache]
+
+    # regular arg parsing
     inputs: List[Any] = context.args
-
-    # arg parsing
     budget = None
     vegetarian = None
     if len(inputs):
@@ -175,9 +221,12 @@ def soup(update, context):
         if len(menu_filter.filters):
             menu = menu_filter(menu)
 
-    soup_id = update.message.reply_text(
+    # send the menu! :)
+    update.message.reply_text(
         str(menu),
         quote=False,
         parse_mode=telegram.constants.PARSEMODE_HTML,
-    ).message_id
-    REQUEST_TIMER["soup_group"][str(update.message.chat_id)] = (now, soup_id)
+    )
+
+    # the group/user has to wait 1h before any further soup request
+    REQUEST_TIMER[group_cache][group_request] = now
