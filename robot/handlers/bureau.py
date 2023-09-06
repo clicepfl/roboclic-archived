@@ -18,6 +18,7 @@ def bureau(update, context):
         chat_id=update.effective_chat.id,
         question=question,
         options=choices,
+        disable_notification=True,
         type=Poll.REGULAR,
         is_anonymous=False,
         allows_multiple_answers=False,
